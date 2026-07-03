@@ -934,7 +934,16 @@ function renderTrip(){
   let prevCo=detectCountry(legs[0]?.fra);
 
   legs.forEach((l,i)=>{
-    const destCo=detectCountry(l.til);
+    let destCo=detectCountry(l.til);
+    // If til is not recognised, peek ahead to find the next detected country.
+    // This ensures the border-crossing row appears before the FIRST leg entering
+    // the new country, even when the destination name is not in COUNTRY_MAP keys.
+    if(!destCo&&l.til){
+      for(let j=i+1;j<legs.length;j++){
+        const nc=detectCountry(legs[j].til);
+        if(nc){if(nc!==prevCo)destCo=nc;break;}
+      }
+    }
     if(destCo&&destCo!==prevCo){rows.push(vigRow(destCo));prevCo=destCo;}
 
     const fl=lFl(l,s.c),co=lCo(l,s.c,s.p);
@@ -1069,10 +1078,12 @@ function fld(id,field,val){
     if(tr2){
       const ki=tr2.querySelector('[data-field="km"]');
       if(ki){ki.classList.add('km-stale');ki.title='Oppdater km fra kartet ↗';}
+      const url=effMap(l);
       const ma=document.getElementById("ml"+id);
-      if(ma&&!ma.classList.contains('off')){
-        ma.classList.add('stale');
-        ma.title='← Klikk, se km i Maps, skriv tilbake';
+      if(ma){
+        ma.href=url||"#";
+        ma.classList.toggle("off",!url);
+        if(url){ma.classList.add('stale');ma.title='← Klikk, se km i Maps, skriv tilbake';}
       }
     }
     // Tøm alltid sights/tips ved destinasjonsendring (ny eller tom)
