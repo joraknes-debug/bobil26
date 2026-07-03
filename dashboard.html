@@ -2156,13 +2156,11 @@ async function aiSend(){
   const thinking=aiAppend('thinking','…');
 
   try{
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    const resp=await fetch('/api/chat',{
       method:'POST',
       headers:{
-        'x-api-key':key,
-        'anthropic-version':'2023-06-01',
         'content-type':'application/json',
-        'anthropic-dangerous-client-side-request-broker':'claude-code'
+        'x-ant-key':key
       },
       body:JSON.stringify({
         model:'claude-haiku-4-5-20251001',
@@ -2187,11 +2185,8 @@ async function aiSend(){
 
   }catch(e){
     thinking?.remove();
-    const isCors=e.message.includes('Failed to fetch')||e.message.includes('NetworkError');
     aiHistory.pop(); // fjern mislykket brukermelding fra historikk
-    aiAppend('error',isCors
-      ?'⚠ Nettverksfeil – mulig CORS-blokkering. Prøv å åpne appen via fil:// eller lokal webserver på en annen port. Feilmelding: '+e.message
-      :'⚠ '+e.message);
+    aiAppend('error','⚠ '+e.message);
     if(st) st.textContent='feil';
   }finally{
     if(btn) btn.disabled=false;
