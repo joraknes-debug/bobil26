@@ -1,0 +1,2033 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bobiltur Europa 2026 – Molde → Pula → Oslo</title>
+<style>
+:root{
+  --bg:#0f1720;--card:#172230;--card2:#1d2c3d;--line:#2a3a4d;
+  --text:#e7eef6;--muted:#9fb3c8;--accent:#22c1a4;--accent2:#3b9dff;
+  --warn:#f0a35e;--good:#36c97a;--bad:#ef6b6b;--pill:#243443;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.45;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1440px;margin:0 auto;padding:14px 10px 60px}
+h1{font-size:1.3rem;margin-bottom:3px}
+.sub{color:var(--muted);font-size:.84rem;margin-bottom:4px}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0}
+.tag{background:var(--pill);border:1px solid var(--line);border-radius:999px;padding:2px 9px;font-size:.73rem;color:var(--muted)}
+.tag b{color:var(--text)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:12px;margin:10px 0}
+.ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;flex-wrap:wrap}
+.ph h2{font-size:.9rem;display:flex;align-items:center;gap:6px;margin:0}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0;display:inline-block}
+.g6{display:grid;grid-template-columns:repeat(auto-fit,minmax(108px,1fr));gap:8px}
+.field label{display:block;font-size:.69rem;color:var(--muted);margin-bottom:2px}
+.field input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:5px;padding:5px 7px;font-size:.86rem}
+.field input:focus{outline:none;border-color:var(--accent)}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:8px;margin:10px 0}
+.metric{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:9px}
+.metric .lab{font-size:.64rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.metric .val{font-size:1.2rem;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
+.metric .val small{font-size:.74rem;color:var(--muted);font-weight:400}
+button{cursor:pointer;background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:5px;padding:4px 9px;font-size:.76rem;white-space:nowrap}
+button:hover{border-color:var(--accent)}
+.btn-row{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.bp{background:var(--accent);color:#0f1720;font-weight:700;border-color:var(--accent)}
+.bp:hover{background:#1aad93;border-color:#1aad93}
+.bo{border-color:var(--accent);color:var(--accent)}
+
+/* ROUTE HINT */
+.hint{background:rgba(59,157,255,.08);border:1px solid rgba(59,157,255,.2);border-radius:7px;
+  padding:7px 11px;font-size:.76rem;color:var(--muted);margin-bottom:10px;display:flex;gap:10px;flex-wrap:wrap}
+.hint b{color:var(--accent2)}
+
+/* TRIP TABLE */
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:.76rem}
+th{background:var(--bg);color:var(--muted);font-size:.64rem;text-transform:uppercase;letter-spacing:.4px;
+  padding:6px 4px;border-bottom:2px solid var(--line);text-align:left;white-space:nowrap}
+td{padding:2px 3px;border-bottom:1px solid rgba(42,58,77,.5);vertical-align:middle}
+tr.ml:hover td{background:rgba(255,255,255,.02)}
+tr.rf td{background:rgba(59,157,255,.05)}
+tr.ro td{background:rgba(54,201,122,.04)}
+tr.ra td{background:rgba(240,163,94,.07)}
+td input,td select{background:transparent;border:1px solid transparent;color:var(--text);
+  border-radius:4px;padding:3px 4px;font-size:.76rem;width:100%;min-width:0}
+td input:focus,td select:focus{outline:none;border-color:var(--accent);background:var(--bg)}
+td select{cursor:pointer}
+[data-val="bekreftet"]{color:var(--good)}
+[data-val="bestilt"]{color:var(--accent2)}
+[data-val="ikke-bestilt"]{color:var(--warn)}
+[data-val="ikke-nødvendig"]{color:var(--muted)}
+[data-val="kjøre"]{color:var(--accent2)}
+[data-val="ferge"]{color:var(--accent)}
+[data-val="opphold"]{color:var(--warn)}
+[data-val="avstikker"]{color:#f5c842}
+.cc{color:var(--muted);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;padding-right:4px}
+.mab{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
+  border-radius:4px;background:var(--pill);border:1px solid var(--line);color:var(--accent2);
+  text-decoration:none;font-size:.78rem;transition:background .2s,border-color .2s}
+.mab:hover{background:var(--accent2);color:#fff}
+.mab.off{color:var(--line);pointer-events:none}
+.mab.stale{border-color:var(--warn);color:var(--warn);background:rgba(240,163,94,.15)}
+input.km-stale{border-color:var(--warn)!important;background:rgba(240,163,94,.1)!important;color:var(--warn)!important}
+@keyframes blink-warn{0%,100%{opacity:1}50%{opacity:.4}}
+input.km-stale{animation:blink-warn 1.2s ease-in-out 2}
+.del{background:none;border:none;color:var(--line);font-size:.82rem;padding:2px 4px;cursor:pointer;border-radius:3px;width:auto}
+.del:hover{color:var(--bad);background:rgba(239,107,107,.1)}
+.ib{background:none;border:none;padding:2px 3px;cursor:pointer;font-size:.78rem;color:var(--muted);border-radius:3px;width:auto;line-height:1}
+.ib:hover,.ib.on{color:var(--accent);background:rgba(34,193,164,.1)}
+tr.ftr td{font-weight:700;color:var(--accent);border-top:2px solid var(--accent);border-bottom:none;padding-top:6px;font-variant-numeric:tabular-nums}
+.nw{color:var(--warn) !important}
+
+/* SIGHTS SUB-ROW */
+tr.str{background:rgba(34,193,164,.04)}
+tr.str td{padding:10px 12px 10px 50px;border-bottom:1px solid var(--line)}
+.sp{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:600px){.sp{grid-template-columns:1fr}}
+.sp h4{font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;color:var(--accent);margin-bottom:5px}
+.sp ul{list-style:none;padding:0}
+.sp li{font-size:.78rem;color:var(--muted);margin:3px 0;line-height:1.4}
+.sp li::before{content:"›";color:var(--accent);margin-right:5px}
+.sp textarea{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);
+  border-radius:5px;padding:6px 8px;font-size:.76rem;resize:vertical;min-height:64px;
+  font-family:inherit;line-height:1.5}
+.sp textarea:focus{outline:none;border-color:var(--accent)}
+.res-link{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:999px;
+  background:var(--pill);border:1px solid var(--line);color:var(--muted);font-size:.72rem;
+  text-decoration:none}
+.res-link:hover{border-color:var(--accent2);color:var(--accent2)}
+
+/* BORDER CROSSING ROW */
+tr.brow td{padding:7px 12px;border-top:2px dashed var(--warn);border-bottom:1px solid rgba(240,163,94,.3)}
+tr.brow.ok td{border-top-color:var(--good);border-bottom-color:rgba(54,201,122,.3)}
+.brow-inner{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:.76rem}
+
+/* SMALL INLINE INPUT/SELECT (cost, diesel) */
+.si{background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:4px;padding:3px 4px;font-size:.72rem}
+.si:focus{outline:none;border-color:var(--accent)}
+.ss{background:var(--bg);border:1px solid var(--line);color:var(--muted);border-radius:3px;padding:2px 3px;font-size:.68rem;cursor:pointer}
+
+/* BOOKING */
+.tb{display:inline-block;padding:2px 7px;border-radius:999px;font-size:.65rem;font-weight:700}
+.t-ferge{background:rgba(59,157,255,.15);color:var(--accent2)}
+.t-camping{background:rgba(34,193,164,.15);color:var(--accent)}
+.t-attraksjon{background:rgba(240,163,94,.15);color:var(--warn)}
+.t-fly{background:rgba(54,201,122,.15);color:var(--good)}
+input[type=checkbox]{width:14px;height:14px;accent-color:var(--accent);cursor:pointer;vertical-align:middle}
+
+/* COUNTRY CARDS */
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px;margin-top:10px}
+.cc-card{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:11px 13px}
+.cc-card h3{font-size:.88rem;margin-bottom:8px;display:flex;align-items:center;gap:7px}
+.cc-card h3 span{font-size:1.1rem}
+.cc-row{display:flex;gap:6px;margin:4px 0;font-size:.76rem;flex-wrap:wrap}
+.cc-label{color:var(--muted);min-width:90px;flex-shrink:0}
+.cc-val{color:var(--text)}
+.cc-val a{color:var(--accent2);font-size:.72rem}
+.cc-alert{margin-top:6px;padding:5px 8px;background:rgba(240,163,94,.1);border-left:3px solid var(--warn);
+  border-radius:3px;font-size:.73rem;color:var(--warn);line-height:1.4}
+.cc-good{margin-top:4px;padding:5px 8px;background:rgba(54,201,122,.08);border-left:3px solid var(--good);
+  border-radius:3px;font-size:.73rem;color:var(--good);line-height:1.4}
+.speed-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin:4px 0}
+.spd{background:var(--bg);border-radius:4px;padding:4px;text-align:center;font-size:.7rem}
+.spd .sv{font-size:1rem;font-weight:700;color:var(--accent2)}
+.spd .sl{font-size:.62rem;color:var(--muted)}
+
+/* ACSI */
+.acsi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(225px,1fr));gap:8px;margin-top:8px}
+.ac{background:var(--card2);border:1px solid var(--line);border-radius:7px;padding:9px}
+.ac h4{font-size:.79rem;color:var(--accent);margin-bottom:2px}
+.ac .loc{font-size:.69rem;color:var(--muted);margin-bottom:3px}
+.ac .inf{font-size:.73rem;line-height:1.4}
+.ac a{color:var(--accent2);font-size:.69rem}
+
+/* ONLINE/OFFLINE INDICATOR */
+.net-ind{display:inline-flex;align-items:center;gap:5px;font-size:.72rem;color:var(--muted)}
+.net-dot{width:8px;height:8px;border-radius:50%;background:var(--good);transition:background .3s;flex-shrink:0}
+.net-dot.offline{background:var(--bad);animation:blink-warn 1.2s ease-in-out infinite}
+
+/* COLLAPSIBLE */
+.ct{cursor:pointer;user-select:none}
+.ct::before{content:"▸ ";color:var(--accent);font-size:.75rem}
+.ct.open::before{content:"▾ "}
+.cb{overflow:hidden;transition:max-height .3s ease}
+
+.tl li{font-size:.78rem;color:var(--muted);margin:4px 0;line-height:1.5}
+.tl b{color:var(--text)}
+footer{color:var(--muted);font-size:.68rem;text-align:center;margin-top:24px}
+a{color:var(--accent2)}
+
+/* FERDIG + ØKONOMI */
+tr.ml.done-row{opacity:.48;}
+tr.ml.done-row td input,tr.ml.done-row td select{color:var(--muted)}
+.done-cb{width:15px;height:15px;cursor:pointer;accent-color:var(--good);vertical-align:middle}
+tr.dsum>td{background:rgba(34,193,164,.07);border-top:2px solid rgba(34,193,164,.28);padding:5px 10px;font-size:.74rem}
+.kost-dep{font-size:.62rem;color:var(--warn);display:flex;align-items:center;gap:2px;margin-top:2px}
+/* TURFORSKEREN */
+.res-floor-head{background:linear-gradient(135deg,rgba(245,200,66,.12),rgba(34,193,164,.08));
+  border-bottom:1px solid var(--line);border-radius:8px 8px 0 0;margin:-12px -12px 12px;padding:12px 14px}
+.res-floor-title{font-size:.95rem;font-weight:700;display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.res-prefs{display:flex;gap:5px;flex-wrap:wrap}
+.res-pref{background:rgba(245,200,66,.1);border:1px solid rgba(245,200,66,.3);border-radius:999px;
+  padding:2px 8px;font-size:.66rem;color:var(--warn);white-space:nowrap}
+.res-card{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.res-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:3px}
+.res-card-head b{font-size:.82rem;line-height:1.3}
+.res-card-meta{font-size:.7rem;color:var(--accent2);margin:3px 0;line-height:1.5}
+.res-card-desc{font-size:.75rem;color:var(--muted);margin:4px 0;line-height:1.4}
+.res-card-foot{display:flex;gap:5px;margin-top:8px;align-items:center;flex-wrap:wrap}
+.wstrip{display:flex;gap:5px;overflow-x:auto;padding-bottom:4px}
+.wday{background:var(--card2);border:1px solid var(--line);border-radius:6px;padding:7px 9px;text-align:center;min-width:76px;flex-shrink:0}
+.wday.hist{border-color:rgba(245,200,66,.3);background:rgba(245,200,66,.05)}
+.wday-date{font-size:.63rem;color:var(--muted);margin-bottom:2px}
+.wday-icon{font-size:1.3rem;margin:2px 0}
+.wday-temp{font-size:.76rem;font-weight:700}
+.wday-rain{font-size:.63rem;color:var(--accent2);margin-top:1px}
+.rcat{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.rcat button{font-size:.76rem}
+.at-bar{background:rgba(34,193,164,.07);border:1px solid rgba(34,193,164,.25);border-radius:7px;
+  padding:7px 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.at-bar a{font-size:.8rem;font-weight:600;color:var(--accent);text-decoration:none}
+.at-bar a:hover{color:var(--text)}
+.at-bar span{font-size:.7rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header style="margin-bottom:10px">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:6px">
+    <h1>🚐 Bobiltur Europa 2026</h1>
+    <span class="net-ind"><span class="net-dot" id="net-dot"></span><span id="net-lbl">Online</span></span>
+  </div>
+  <div class="sub">20. juli – 9. august · Molde → Pula → <b>Oslo</b></div>
+  <div class="tags">
+    <span class="tag">Solifer Action 2018</span>
+    <span class="tag">Høyde <b>3,1 m</b></span>
+    <span class="tag">Lengde <b>7,23 m</b></span>
+    <span class="tag">⛽ Diesel · under 3500 kg</span>
+    <span class="tag">Sertifikat <b>klasse B</b></span>
+    <span class="tag">Registrert for <b>6 personer</b></span>
+  </div>
+</header>
+
+<!-- INNSTILLINGER -->
+<div class="panel">
+  <div class="ph">
+    <h2><span class="dot"></span>Innstillinger</h2>
+    <div class="btn-row">
+      <button class="bp" onclick="exportData()">⬇ Eksporter JSON</button>
+      <button class="bo" onclick="importData()">⬆ Importer JSON</button>
+      <button onclick="nyReise()" style="color:var(--warn);border-color:var(--warn)" title="Eksporterer gjeldende tur, så starter du en tom ny tur">🆕 Ny reise</button>
+      <button onclick="if(confirm('Nullstill til standarddata?')){localStorage.removeItem('bv4');localStorage.removeItem('bv4s');location.reload()}" style="color:var(--bad);border-color:var(--bad)">↺ Nullstill</button>
+    </div>
+  </div>
+  <div class="g6">
+    <div class="field"><label>Dieselpris (€/L)</label><input id="ip" type="number" step="0.01" value="1.65" oninput="onSet()"></div>
+    <div class="field"><label>Forbruk (L/100 km)</label><input id="ic" type="number" step="0.1" value="11" oninput="onSet()"></div>
+    <div class="field"><label>Ferge t/r (€)</label><input id="if" type="number" step="10" value="460" oninput="onSet()"></div>
+    <div class="field"><label>Vignetter + bom (€)</label><input id="iv" type="number" step="5" value="170" oninput="onSet()"></div>
+    <div class="field"><label>Camping (€/natt)</label><input id="ica" type="number" step="1" value="38" oninput="onSet()"></div>
+    <div class="field"><label>NOK per €</label><input id="ir" type="number" step="0.1" value="11.5" oninput="onSet()"></div>
+    <div class="field"><label>Snittfart inkl. pauser (km/h)</label><input id="is" type="number" step="5" value="75" oninput="onSet()" title="Brukes til å beregne ankomsttid automatisk"></div>
+    <div class="field"><label>Faktisk ferge t/r (€) <span style="color:var(--accent);font-size:.65rem">faktisk</span></label><input id="iff" type="number" step="10" placeholder="0" oninput="onSet()" title="Faktisk betalt for ferge – brukes i Faktisk total"></div>
+    <div class="field"><label>Faktisk camping/natt (€) <span style="color:var(--accent);font-size:.65rem">faktisk</span></label><input id="ifca" type="number" step="1" placeholder="0" oninput="onSet()" title="Faktisk gjennomsnitt per natt – brukes i Faktisk total"></div>
+  </div>
+  <div style="margin-top:10px;border-top:1px solid var(--line);padding-top:8px">
+    <div style="font-size:.68rem;color:var(--muted);line-height:1.7;margin-bottom:8px">
+      <span style="color:var(--accent)">🗺</span> Km hentes automatisk fra <b style="color:var(--text)">OpenStreetMap/OSRM</b> – gratis, ingen nøkkel. &nbsp;
+      <span style="color:var(--accent)">⛺</span> Kart-lenker åpner Google Maps for visuell rute.
+    </div>
+    <div class="field">
+      <label>Google Maps API-nøkkel <span style="color:var(--muted);font-weight:400;text-transform:none">– kun for severdigheter (valgfritt, nær gratis)</span></label>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:2px">
+        <input id="igm" type="password" placeholder="AIzaSy… (legg inn for bedre severdigheter)" style="flex:1;font-family:monospace;font-size:.8rem;background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:5px;padding:5px 7px" onchange="setGmKey(this.value)" autocomplete="off">
+        <span id="gm-st" style="font-size:.73rem;color:var(--muted);white-space:nowrap">Ikke satt – bruker OSM</span>
+      </div>
+      <div style="font-size:.67rem;color:var(--muted);margin-top:3px;line-height:1.5">
+        Uten nøkkel: OpenStreetMap-data. Med nøkkel: Google Places API – mye bedre kvalitet. Aktiver <b>Places API</b> og <b>Geocoding API</b> på
+        <a href="https://console.cloud.google.com/apis/library" target="_blank">Google Cloud Console</a>. Koster ~$0 for 20 destinasjoner.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NØKKELTALL -->
+<div class="metrics">
+  <div class="metric"><div class="lab">Total km</div><div class="val" id="m0">–</div></div>
+  <div class="metric"><div class="lab">Diesel</div><div class="val" id="m1">–</div></div>
+  <div class="metric"><div class="lab">Drivstoffkost</div><div class="val" id="m2">–</div></div>
+  <div class="metric"><div class="lab">Ferge + vignett</div><div class="val" id="m3">–</div></div>
+  <div class="metric"><div class="lab">Camping</div><div class="val" id="m4">–</div></div>
+  <div class="metric" style="border-color:var(--accent)">
+    <div class="lab" style="color:var(--accent)">Budsjett (€)</div>
+    <div class="val" id="m5" style="color:var(--accent)">–</div>
+  </div>
+  <div class="metric"><div class="lab">Budsjett (kr)</div><div class="val" id="m6">–</div></div>
+  <div class="metric" id="m7card" style="border-color:var(--warn);display:none">
+    <div class="lab" style="color:var(--warn)">Faktisk total (€)</div>
+    <div class="val" id="m7" style="color:var(--warn)">–</div>
+  </div>
+  <div class="metric" id="m8card" style="display:none">
+    <div class="lab">Faktisk total (kr)</div>
+    <div class="val" id="m8">–</div>
+  </div>
+</div>
+
+<!-- REISERUTE -->
+<div class="panel">
+  <div class="ph">
+    <h2><span class="dot"></span>Reiserute</h2>
+    <div class="btn-row">
+      <button onclick="addLeg('kjøre')">+ Etappe</button>
+      <button onclick="addLeg('avstikker')" style="color:#f5c842;border-color:#f5c842">🔀 Avstikker</button>
+    </div>
+  </div>
+  <div class="hint">
+    <span>✏️ <b>Endre destinasjon:</b> Skriv ny Fra/Til → km hentes automatisk fra OpenStreetMap → klikk 🗺 for å se ruten visuelt i Google Maps</span>
+    <span>🔗 <b>Kjedekjøring:</b> Endrer du Til, oppdateres neste etappes Fra automatisk</span>
+    <span>🔀 <b>Avstikker:</b> Sidetur som ikke endrer neste etappes startpunkt</span>
+    <span>📍 <b>Severdigheter:</b> Klikk 📍 for å redigere info eller søke etter campingplasser</span>
+  </div>
+  <div class="tw">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:28px" title="Ferdig">✓</th>
+          <th style="width:38px"># 📍</th>
+          <th style="width:100px">Dato</th>
+          <th style="min-width:140px">Fra</th>
+          <th style="min-width:140px">Til</th>
+          <th style="min-width:145px">Overnatting</th>
+          <th style="width:80px">Type</th>
+          <th style="width:60px">Km</th>
+          <th style="width:52px">Avg.</th>
+          <th style="width:52px">Ank.</th>
+          <th style="width:58px">Diesel L</th>
+          <th style="width:70px">Kost</th>
+          <th style="width:90px">Status</th>
+          <th style="width:28px">🗺</th>
+          <th style="min-width:120px">Notat</th>
+          <th style="width:60px">Flytt / ✕</th>
+        </tr>
+      </thead>
+      <tbody id="tb"></tbody>
+      <tfoot>
+        <tr class="ftr">
+          <td colspan="7" style="color:var(--muted);font-weight:400;font-size:.7rem">Totalt</td>
+          <td class="cc" id="fkm" style="color:var(--accent)"></td>
+          <td colspan="2"></td>
+          <td class="cc" id="ffl" style="color:var(--accent)"></td>
+          <td class="cc" id="fco" style="color:var(--accent)"></td>
+          <td colspan="4"></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- BOOKINGSJEKKLISTE -->
+<div class="panel">
+  <div class="ph">
+    <h2><span class="dot" style="background:var(--accent2)"></span>Bookingsjekkliste</h2>
+    <div class="btn-row">
+      <button onclick="addBook()">+ Legg til</button>
+      <span id="bstat" style="font-size:.73rem;color:var(--muted)"></span>
+    </div>
+  </div>
+  <div class="tw">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:88px">Type</th>
+          <th style="min-width:210px">Hva</th>
+          <th style="width:108px">Dato</th>
+          <th style="width:100px">Status</th>
+          <th style="width:90px">Ref.nr</th>
+          <th style="width:44px" title="Bekreftelse mottatt">Bekr.</th>
+          <th style="width:22px"></th>
+        </tr>
+      </thead>
+      <tbody id="bb"></tbody>
+    </table>
+  </div>
+  <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
+    <span class="tb t-ferge">Ferge</span><span class="tb t-camping">Camping</span>
+    <span class="tb t-attraksjon">Attraksjon</span><span class="tb t-fly">Fly</span>
+  </div>
+</div>
+
+<!-- TURFORSKEREN -->
+<div class="panel" id="sec-turforskeren">
+
+  <!-- Etasje-header med turkonfig -->
+  <div class="res-floor-head">
+    <div class="res-floor-title">
+      <span class="dot" style="background:#f5c842"></span>🔭 Turforskeren
+      <span style="font-size:.72rem;font-weight:400;color:var(--muted)">– research og planlegg etapper</span>
+    </div>
+    <div class="res-prefs">
+      <span class="res-pref">🥾 3–5 timer · middels krevende</span>
+      <span class="res-pref">🌲 Off-beaten · autentiske landsbyer</span>
+      <span class="res-pref">🏖 Avsidesliggende strender</span>
+      <span class="res-pref">🍽 Lokal mat · ikke for dyr</span>
+      <span class="res-pref">🎭 Jazz & gallerier (regndag)</span>
+    </div>
+  </div>
+
+  <!-- Søk -->
+  <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+    <input id="res-q" type="text" placeholder="Søk sted du vurderer: Pula, Bled, Slovenský raj, Budapest…"
+      style="flex:1;min-width:200px;background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:5px;padding:5px 9px;font-size:.84rem"
+      onkeydown="if(event.key==='Enter')resSearch()">
+    <input id="res-d1" type="date" class="si" style="width:130px" title="Besøksdato (fra)">
+    <input id="res-d2" type="date" class="si" style="width:130px" title="Til dato (valgfritt)">
+    <button class="bp" onclick="resSearch()" style="white-space:nowrap">🔍 Søk</button>
+  </div>
+
+  <!-- Kategoripiller -->
+  <div class="rcat">
+    <button id="rcat-hike" class="bo" onclick="resCat('hike')">🥾 Fotturer</button>
+    <button id="rcat-beach" onclick="resCat('beach')">🏖 Strand</button>
+    <button id="rcat-food" onclick="resCat('food')">🍽 Lokal mat</button>
+    <button id="rcat-rainy" onclick="resCat('rainy')">🎭 Regndag</button>
+  </div>
+
+  <!-- AllTrails-bar (vises kun for fotturer) -->
+  <div id="res-alltrails" class="at-bar" style="display:none">
+    <span>🥾</span>
+    <a id="res-at-link" href="#" target="_blank">Søk turruter på AllTrails →</a>
+    <span>populære ruter med kart, bilder og vanskelighetsgrad</span>
+  </div>
+
+  <!-- Hint (skjules etter første søk) -->
+  <div id="res-hint" class="hint" style="font-size:.74rem;margin-bottom:10px">
+    <div>
+      <b>Slik:</b> Søk på et sted, velg datoer og kategori. Fotturer og strender fra OpenStreetMap,
+      AllTrails for kjente turruter med bilder og detaljer. Værmeldingen vises der det er mulig –
+      ellers klimasnitt for tilsvarende periode i fjor.
+      Klikk <b>+ Legg til etappe</b> for å sende stedet til ruteplanleggeren.
+    </div>
+  </div>
+
+  <!-- Vær (prognose eller historisk) -->
+  <div id="res-weather" style="display:none;margin-bottom:12px"></div>
+
+  <!-- Status -->
+  <div id="res-status" style="font-size:.76rem;color:var(--muted);margin-bottom:6px;min-height:1.1em"></div>
+
+  <!-- Resultater -->
+  <div id="res-results" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px"></div>
+
+  <!-- Legg-til-bar -->
+  <div id="res-add-bar" style="display:none;margin-top:12px;background:var(--card2);border:1px solid var(--accent);border-radius:8px;padding:10px 12px">
+    <div style="font-size:.78rem;margin-bottom:7px">Legg til etappe: <b id="res-add-name"></b></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+      <input type="date" id="res-add-date" class="si" style="width:130px" title="Dato for etappen">
+      <select id="res-add-type" class="si" style="width:124px;cursor:pointer">
+        <option value="kjøre">🚐 Kjøredag</option>
+        <option value="opphold" selected>🏕 Overnatting</option>
+        <option value="avstikker">🚶 Dagstur</option>
+      </select>
+      <input type="text" id="res-add-note" placeholder="Notat…" class="si" style="min-width:120px;flex:1">
+      <button class="bp" onclick="resConfirmAdd()" style="font-size:.76rem">✓ Legg til</button>
+      <button onclick="gi('res-add-bar').style.display='none'" style="font-size:.76rem;color:var(--muted)">✕</button>
+    </div>
+  </div>
+</div>
+
+<!-- LANDSINFORMASJON -->
+<div class="panel">
+  <div class="ph" style="margin-bottom:0">
+    <h2 class="ct" onclick="togSec('c-b',this)">
+      <span class="dot" style="background:var(--accent2)"></span>Pålagte krav per land – bobil under 3500 kg · klasse B · 6 seter
+    </h2>
+  </div>
+  <div id="c-b" class="cb" style="max-height:0">
+    <div style="margin-top:8px;padding:6px 10px;background:rgba(34,193,164,.08);border-radius:6px;font-size:.76rem;color:var(--muted)">
+      ✅ <b style="color:var(--text)">Klasse B-sertifikat er gyldig i hele EU/EØS</b> for kjøretøy inntil 3500 kg og inntil 8 sitteplasser (utover fører).
+      Din bobil med 6 registrerte seter og under 3500 kg faller inn under ordinære personbilregler i alle land nedenfor.
+    </div>
+    <div class="cgrid" id="cgrid"></div>
+  </div>
+</div>
+
+<!-- ACSI -->
+<div class="panel">
+  <div class="ph" style="margin-bottom:0">
+    <h2 class="ct" onclick="togSec('a-b',this)"><span class="dot" style="background:var(--warn)"></span>ACSI campingplasser langs ruten</h2>
+  </div>
+  <div id="a-b" class="cb" style="max-height:0"></div>
+</div>
+
+<!-- PRAKTISK -->
+<div class="panel">
+  <div class="ph" style="margin-bottom:0">
+    <h2 class="ct" onclick="togSec('t-b',this)"><span class="dot" style="background:var(--bad)"></span>Praktiske tips for bobilen</h2>
+  </div>
+  <div id="t-b" class="cb" style="max-height:0">
+    <ul class="tl" style="padding-left:14px;margin-top:8px">
+      <li>⛽ <b>Billigst diesel:</b> Polen og Slovenia. Dyrest: Norge og Tyskland. Fyll gjerne full tank i PL/SI.</li>
+      <li>📏 <b>Høyde 3,1 m:</b> Minimum 3,2 m klarering i portaler, parkerings­hus og campinginnkjøringer.</li>
+      <li>📐 <b>Lengde 7,23 m:</b> Ferge prises etter lengde – oppgi nøyaktig 7,23 m ved booking (>6 m gir tillegg).</li>
+      <li>🚢 <b>Ferge Trelleborg–Rostock:</b> TT-Line og DFDS. Book lugar på forhånd. Sjekk at du oppgir bobil (ikke personbil).</li>
+      <li>🏕 <b>Pula og Bled i august:</b> Ekstremt populært – forhåndsbook campingplass!</li>
+      <li>✈ <b>Pula lufthavn (PUY):</b> DY1942 Oslo–Pula. Sjekk eksakt flytid for henting/avlevering.</li>
+      <li>🧰 <b>Utstyr i bilen:</b> Varseltrekant, refleksvest (pr person i flere land), P-skive (anbefalt), grønt kort.</li>
+      <li>📱 <b>Apps:</b> Maps.me (offline kart), iOverlander/Park4Night (campingplasser), Tolltickets (vignetter).</li>
+      <li>💳 <b>Betaling:</b> Visa/Mastercard aksepteres overalt. Ha litt lokalt kontant for toll og markeder.</li>
+    </ul>
+  </div>
+</div>
+
+<footer>Offline-dashboard · data lagres i nettleseren · Eksporter JSON for å synkronisere mellom nettlesere og enheter</footer>
+</div>
+
+<script>
+/* ============================================================
+   DATA
+   ============================================================ */
+
+const TEMPLATE_LEGS = [
+  {id:1,dato:"",fra:"",til:"",overnatting:"",type:"kjøre",km:0,avg:"09:00",ank:"",status:"ikke-bestilt",note:"",mapUrl:"",sights:[],tips:[]},
+  {id:2,dato:"",fra:"",til:"",overnatting:"",type:"kjøre",km:0,avg:"09:00",ank:"",status:"ikke-bestilt",note:"",mapUrl:"",sights:[],tips:[]},
+  {id:3,dato:"",fra:"",til:"",overnatting:"",type:"kjøre",km:0,avg:"09:00",ank:"",status:"ikke-bestilt",note:"",mapUrl:"",sights:[],tips:[]},
+];
+const TEMPLATE_BOOKS = [
+  {id:1,type:"ferge",item:"",dato:"",status:"ikke-bestilt",ref:"",ok:false},
+  {id:2,type:"camping",item:"",dato:"",status:"ikke-bestilt",ref:"",ok:false},
+];
+
+const DEFAULT_LEGS = [
+  {id:1,dato:"2026-07-20",fra:"Midsund / Molde",til:"Oslo, Vålerenggata 6",
+   overnatting:"Hjemme – egen leilighet",type:"kjøre",km:562,avg:"09:00",ank:"16:55",
+   status:"bekreftet",note:"Avreise. E136 → Dovre → E6 → Oslo",
+   mapUrl:"https://maps.app.goo.gl/UDSwG8X9NkeUQedY9",
+   sights:["🎭 Operahuset – gå på taket (gratis)","🗿 Vigelandsparken – 200+ skulpturer","🎨 Munchmuseet","🏰 Akershus festning (gratis)","🚢 Aker Brygge – sjøfronten"],
+   tips:["Sykkeltur langs Akerselva fra Grünerløkka","Oslofjorden med ferge (gratis t/r Nesoddtangen)","Holmenkollen og skimuseet – utsikt over Oslo"]},
+
+  {id:2,dato:"2026-07-21",fra:"Oslo, Vålerenggata 6",til:"Trelleborg",
+   overnatting:"Trelleborg Strand Camping",type:"kjøre",km:215,avg:"09:00",ank:"12:58",
+   status:"ikke-bestilt",note:"E6 → Göteborg → Malmö → Trelleborg",
+   mapUrl:"https://maps.app.goo.gl/JbnmwXzA15dP1Mgw9",
+   sights:["🏰 Trelleborgen – rekonstruert vikingeborg (50 m fra camping)","🏖 Trelleborg Strand","🪨 Ales stenar – 59 km unna (dagsturs, Skandinavias Stonehenge)"],
+   tips:["Kort sykkeltur til Trelleborgen","Göteborg sentrum (stopp på vei, 3 t fra Oslo)"]},
+
+  {id:3,dato:"2026-07-21",fra:"Trelleborg",til:"Rostock",
+   overnatting:"Om bord (ferge)",type:"ferge",km:0,avg:"23:45",ank:"06:30+1",
+   status:"ikke-bestilt",note:"⚠ TT-Line / DFDS – oppgi lengde 7,23 m og book lugar!",
+   mapUrl:"",sights:["🌊 Nattcrossing over Østersjøen (~6 timer)","🌅 Soloppgang over havet"],
+   tips:["Restauranten om bord er grei og rimeligere enn ombordpris på Color Line","Book lugar med dusj for en komfortabel natt"]},
+
+  {id:5,dato:"2026-07-22",fra:"Rostock",til:"Autocamp Sedmihorky",
+   overnatting:"Autocamp Sedmihorky",type:"kjøre",km:0,avg:"09:00",ank:"",
+   status:"ikke-bestilt",note:"Bohemsk Paradis-regionen, Tsjekkia – ca. 550 km via Berlin/Dresden",
+   mapUrl:"",
+   sights:["🪨 Prachovské skaly – spektakulære sandsteinklipp (4 km merket sti)","🏰 Trosky-slottet – dobbelt ruintårn på lavatopper","🏰 Hrubá Skála – middelalderslott innebygd i klipper","🦅 Utsiktspunkt Mariánská vyhlídka"],
+   tips:["Vandring i Prachovské skaly – 2-3 timer, lett til middels (anbefalt)","Sykkel mellom landsbyene Libuň og Sobotka","Klatring for viderekomne i klippene ved Drábské světničky"]},
+
+  {id:6,dato:"2026-07-24",fra:"Autocamp Sedmihorky",til:"",overnatting:"",type:"kjøre",
+   km:148,avg:"09:00",ank:"",status:"ikke-bestilt",note:"Fyll inn destinasjon",
+   mapUrl:"https://maps.app.goo.gl/mDgH7yeHkjqvSFPz5",sights:[],tips:[]},
+
+  {id:7,dato:"2026-07-25",fra:"",til:"",overnatting:"",type:"kjøre",
+   km:55,avg:"09:00",ank:"",status:"ikke-bestilt",note:"",
+   mapUrl:"https://maps.app.goo.gl/YStumW6vWWoGffcy9",sights:[],tips:[]},
+
+  {id:8,dato:"2026-07-26",fra:"",til:"",overnatting:"",type:"kjøre",
+   km:210,avg:"09:00",ank:"",status:"ikke-bestilt",note:"",
+   mapUrl:"https://maps.app.goo.gl/8CQMD7xXf21EE3fk8",sights:[],tips:[]},
+
+  {id:9,dato:"2026-07-27",fra:"",til:"",overnatting:"",type:"kjøre",
+   km:59,avg:"09:00",ank:"",status:"ikke-bestilt",note:"",
+   mapUrl:"https://maps.app.goo.gl/g8nUmnPVWtRiesbR7",sights:[],tips:[]},
+
+  {id:10,dato:"2026-07-28",fra:"",til:"",overnatting:"",type:"opphold",km:0,avg:"",ank:"",
+   status:"ikke-bestilt",note:"Fyll inn oppholdssted",mapUrl:"",sights:[],tips:[]},
+
+  {id:11,dato:"2026-07-29",fra:"",til:"",overnatting:"",type:"opphold",km:0,avg:"",ank:"",
+   status:"ikke-bestilt",note:"",mapUrl:"",sights:[],tips:[]},
+
+  {id:12,dato:"2026-07-30",fra:"",til:"",overnatting:"",type:"opphold",km:0,avg:"",ank:"",
+   status:"ikke-bestilt",note:"",mapUrl:"",sights:[],tips:[]},
+
+  {id:13,dato:"2026-07-31",fra:"",til:"Pula, Kroatia",overnatting:"Camping Stoja, Pula",
+   type:"kjøre",km:338,avg:"09:00",ank:"",status:"ikke-bestilt",note:"🎯 Ankomst Pula!",
+   mapUrl:"https://maps.app.goo.gl/TnyKwdem62F8ru6Z6",
+   sights:["🏛 Pula Arena – ett av verdens best bevarte romerske amfiteatre (23 f.Kr.)","⛪ Forum Romanum og Augustustempelet","🏖 Cape Kamenjak naturpark – vill natur, klipper og krystallklart hav","🏝 Brijuni nasjonalpark – dagsbåt fra Fažana (10 min kjøring)","🐟 Rovinj – pittoresk havneby 40 km nord"],
+   tips:["Sykkeltur til Cape Kamenjak (15 km sør for Pula, flat rute langs kysten)","Snorkling fra klippene i Kamenjak","Båttur til Brijuni – safari og romerske ruiner (bestill dagen før)","Kveldsbading ved Stoja-stranda rett ved campingplassen"]},
+
+  {id:14,dato:"2026-08-01",fra:"Pula",til:"Pula",overnatting:"Camping Stoja, Pula",
+   type:"opphold",km:0,avg:"",ank:"",status:"bekreftet",
+   note:"✈ Erika flyr hjem til Oslo · Sønn ankommer DY1942 fra Oslo",
+   mapUrl:"",
+   sights:["🏛 Pula Arena – kveldsarrangement om sommeren","🌊 Dagstur til øyene rundt Pula med leiebåt","🦞 Fersk fisk og sjømat på markedet i sentrum"],
+   tips:["Pula lufthavn (PUY) er 10 min kjøring fra Stoja","DY1942: sjekk ankomstid på Norwegians app","Kveldstur i gamlebyen – gratis og stemningsfullt"]},
+
+  {id:15,dato:"2026-08-02",fra:"Pula",til:"",overnatting:"",type:"kjøre",
+   km:337,avg:"09:00",ank:"",status:"ikke-bestilt",note:"Returreise starter",
+   mapUrl:"https://maps.app.goo.gl/ZPV2amgw29ussSF79",sights:[],tips:[]},
+
+  {id:16,dato:"2026-08-03",fra:"",til:"",overnatting:"",type:"kjøre",km:0,avg:"09:00",ank:"",
+   status:"ikke-bestilt",note:"",mapUrl:"",
+   sights:["💧 Bled – Bledsjøen, slott på klippen, øykirken","🌲 Vintgar-juvet – 1,6 km trebroer langs ravinen","🏔 Triglav nasjonalpark – alpint landskap"],
+   tips:["Vintgar-juvet: parkér ved inngangen, 3-4 km tur/retur","Pletna-båt til Bledøya (45 min tur, staker med hånd)","Blejski grad (slottet) – utsikt over hele innsjøen"]},
+
+  {id:17,dato:"2026-08-04",fra:"",til:"",overnatting:"",type:"kjøre",km:0,avg:"09:00",ank:"",
+   status:"ikke-bestilt",note:"",mapUrl:"",sights:[],tips:[]},
+
+  {id:18,dato:"2026-08-05",fra:"",til:"",overnatting:"",type:"kjøre",km:0,avg:"09:00",ank:"",
+   status:"ikke-bestilt",note:"",mapUrl:"",sights:[],tips:[]},
+
+  {id:19,dato:"2026-08-06",fra:"",til:"Trelleborg",overnatting:"",type:"kjøre",km:0,avg:"09:00",ank:"",
+   status:"ikke-bestilt",note:"",mapUrl:"",sights:[],tips:[]},
+
+  {id:20,dato:"2026-08-06",fra:"Trelleborg",til:"Rostock",overnatting:"Om bord (ferge)",
+   type:"ferge",km:0,avg:"23:45",ank:"06:30+1",status:"ikke-bestilt",note:"Returferge",
+   mapUrl:"",sights:[],tips:[]},
+
+  {id:21,dato:"2026-08-07",fra:"Rostock / Trelleborg",til:"Oslo",overnatting:"Oslo",
+   type:"kjøre",km:0,avg:"09:00",ank:"",status:"ikke-bestilt",note:"",
+   mapUrl:"",sights:[],tips:[]},
+
+  {id:22,dato:"2026-08-09",fra:"Oslo",til:"Oslo",overnatting:"Oslo / Hjemme",
+   type:"opphold",km:0,avg:"",ank:"",status:"ikke-bestilt",note:"🏁 Endestasjon",
+   mapUrl:"",sights:[],tips:[]},
+];
+
+const DEFAULT_BOOKS = [
+  {id:1,type:"ferge",item:"Ferge Trelleborg → Rostock (TT-Line / DFDS)",dato:"2026-07-21",status:"ikke-bestilt",ref:"",ok:false},
+  {id:2,type:"ferge",item:"Ferge Rostock → Trelleborg (returferge)",dato:"",status:"ikke-bestilt",ref:"",ok:false},
+  {id:3,type:"camping",item:"Trelleborg Strand Camping (1 natt)",dato:"2026-07-21",status:"ikke-bestilt",ref:"",ok:false},
+  {id:4,type:"camping",item:"Autocamp Sedmihorky, Tsjekkia",dato:"2026-07-22",status:"ikke-bestilt",ref:"",ok:false},
+  {id:5,type:"camping",item:"Camping Stoja, Pula (ankomst 31. jul)",dato:"2026-07-31",status:"ikke-bestilt",ref:"",ok:false},
+  {id:6,type:"attraksjon",item:"Pula Arena – inngang / kveldsarrangement",dato:"",status:"ikke-bestilt",ref:"",ok:false},
+  {id:7,type:"attraksjon",item:"Brijuni nasjonalpark – båttur fra Fažana",dato:"",status:"ikke-bestilt",ref:"",ok:false},
+  {id:8,type:"fly",item:"DY1942 Oslo → Pula (sønn ankommer)",dato:"2026-08-01",status:"bekreftet",ref:"DY1942",ok:false},
+  {id:9,type:"fly",item:"Erika: fly hjem Pula → Oslo",dato:"2026-08-01",status:"ikke-bestilt",ref:"",ok:false},
+];
+
+const ACSI = [
+  {l:"🇸🇪",n:"Trelleborg Strand Camping",s:"Trelleborg",i:"ACSI-godkjent. Rett ved havnen – perfekt siste natt før fergen.",u:"https://www.trelleborgstrandcamping.se"},
+  {l:"🇨🇿",n:"Autocamp Sedmihorky",s:"Bohemsk Paradis",i:"ACSI-godkjent. Naturskjønn bobilplass i nasjonalparken.",u:"https://www.sedmihorky.cz"},
+  {l:"🇨🇿",n:"Camping Merkur",s:"Praha",i:"ACSI-godkjent. God buss til sentrum.",u:"https://www.campingmerkur.cz"},
+  {l:"🇸🇰",n:"Camping Zlaté Piesky",s:"Bratislava",i:"ACSI-godkjent. Sjøcamping utenfor byen.",u:"https://www.zlatepiesky.sk"},
+  {l:"🇭🇺",n:"Camping Zugligeti Niche",s:"Budapest",i:"ACSI-godkjent. Rolig skogsområde, buss til sentrum.",u:"https://www.campingniche.hu"},
+  {l:"🇭🇷",n:"Camping Stoja",s:"Pula",i:"ACSI-godkjent. 3 km fra sentrum, rett ved Adriaterhavet.",u:"https://www.arenatusan.com"},
+  {l:"🇭🇷",n:"Camping Brioni",s:"Fažana / Pula",i:"ACSI-godkjent. Nær Brijuni nasjonalpark.",u:"https://www.brijuni-camping.com"},
+  {l:"🇸🇮",n:"Camping Bled",s:"Bled",i:"ACSI-godkjent. Spektakulær beliggenhet ved Bledsjøen.",u:"https://www.camping-bled.com"},
+  {l:"🇦🇹",n:"Natterer See Camping",s:"Innsbruck",i:"ACSI-godkjent. Alpin camping ved fjellsjø.",u:"https://www.natterersee.com"},
+  {l:"🇩🇪",n:"Campingplatz Auensee",s:"Leipzig",i:"ACSI-godkjent. Rolig plass nær sentrum.",u:"https://www.campingplatz-auensee.de"},
+];
+
+const COUNTRIES = [
+  {flag:"🇳🇴",name:"Norge",vignett:"Ingen vignett",vignett_url:"",vignett_note:"Bompenger finnes (AutoPASS/EPC). Brikke anbefalt.",
+   speed:[110,80,50],alcohol:"0,2 ‰",
+   utstyr:["Varseltrekant","Refleksvest","Brannslukker (anbefalt)"],
+   special:["Lys alltid på","Vinterdekk ved vinterforhold (okt–apr)","Mobilforbud (bare håndfri)"],
+   klasse_b:"Fullt gyldig. Bobil under 3500 kg = personbilregler.",
+   alert:""},
+
+  {flag:"🇸🇪",name:"Sverige",vignett:"Ingen vignett",vignett_url:"",vignett_note:"Noen bomstasjoner i Stockholm/Göteborg.",
+   speed:[120,90,50],alcohol:"0,2 ‰",
+   utstyr:["Varseltrekant","Refleksvest"],
+   special:["Lys alltid på","Nulltoleranse for mobil i hånden","Vinterdekk påbudt 1. des – 31. mars"],
+   klasse_b:"Fullt gyldig. Standard personbilregler.",
+   alert:""},
+
+  {flag:"🇩🇪",name:"Tyskland",vignett:"Ingen motorvegvignett",vignett_url:"https://www.umwelt-plakette.de",
+   vignett_note:"Umweltplakette (miljøklistremerke) kreves i alle Umweltzonen (de fleste byer). Grønn plakette = fri ferdsel.",
+   speed:[130,100,50],alcohol:"0,5 ‰",
+   utstyr:["Varseltrekant (lovpålagt)","Refleksvest (lovpålagt ved uhell)","Førstehjelp (anbefalt)"],
+   special:["Forbikjøring på motorvei: alltid til venstre","Aldersgrense 21 år for kjøp av Umweltplakette (du er sjåfør – OK)","Mobilforbud","Mange byer: Tempo 30 soner"],
+   klasse_b:"Fullt gyldig. Under 3500 kg = PKW. Ingen spesielle begrensninger.",
+   alert:"🔴 Umweltplakette: kjøp på nett (umwelt-plakette.de) FØR avreise. Grønn plakette koster ca €10–15. Uten klistrelapp = bot på €80."},
+
+  {flag:"🇵🇱",name:"Polen",vignett:"Ingen vignett",vignett_url:"",vignett_note:"Motorveier: bom underveis (A1, A2, A4). Betalt med kort.",
+   speed:[140,120,90,50],alcohol:"0,2 ‰",
+   utstyr:["Varseltrekant (lovpålagt)","Refleksvest (anbefalt)","Brannslukker (anbefalt)"],
+   special:["Lys alltid på (også på dagtid)","Barn under 12 år: bilsete påbudt","Bomtoll A-veier: ca €1–3 per passering","Mobilforbud"],
+   klasse_b:"Fullt gyldig. Under 3500 kg = passasjerbil.",
+   alert:""},
+
+  {flag:"🇨🇿",name:"Tsjekkia",vignett:"E-vignett påbudt",vignett_url:"https://edalnice.cz",
+   vignett_note:"Kjøp på edalnice.cz. Registrert på nummerskilt – ingen klistremerke. Under 3500 kg: 10 dager ca €14 / 1 mnd ca €25 / 1 år ca €60.",
+   speed:[130,90,50],alcohol:"0,0 ‰",
+   utstyr:["Varseltrekant (lovpålagt)","Refleksvest EN471 (lovpålagt – én pr person i bilen)","Førstehjelp (lovpålagt)"],
+   special:["NULLTOLERANSE for alkohol – absolutt null","Lys alltid på","Vignett gjelder bare motorveier (D-veier)","Bøter betales på stedet"],
+   klasse_b:"Fullt gyldig. Under 3500 kg = M1. Vignett kategori: under 3,5t (standard).",
+   alert:"🔴 VIKTIG: Kjøp e-vignett på edalnice.cz FØR du kjører inn på motorvei. Gyldigheten starter kl. 00:00 dagen du velger."},
+
+  {flag:"🇸🇰",name:"Slovakia",vignett:"E-vignett påbudt",vignett_url:"https://eznamka.sk",
+   vignett_note:"Kjøp på eznamka.sk. Under 3500 kg: 10 dager ca €12 / 1 mnd ca €16 / 1 år ca €55.",
+   speed:[130,90,50],alcohol:"0,0 ‰",
+   utstyr:["Varseltrekant (lovpålagt)","Refleksvest (lovpålagt)","Førstehjelp (lovpålagt)"],
+   special:["NULLTOLERANSE for alkohol","Lys alltid på","Mobilforbud","Vignett kun for motorveier (D-veier)"],
+   klasse_b:"Fullt gyldig. Under 3500 kg = personbilkategori.",
+   alert:"🔴 E-vignett: eznamka.sk FØR motorvei. Kontroller at registreringsnummeret er korrekt (norsk format)."},
+
+  {flag:"🇭🇺",name:"Ungarn",vignett:"E-vignett påbudt",vignett_url:"https://ematrica.hu",
+   vignett_note:"Kjøp på ematrica.hu. Kategori D1 (personbil til 3,5t). 10 dager ca €13 / 1 mnd ca €16 / 1 år ca €53. Gjelder 00:00 dagen du velger.",
+   speed:[130,90,50],alcohol:"0,0 ‰",
+   utstyr:["Varseltrekant (lovpålagt)","Refleksvest (lovpålagt)","Førstehjelp (lovpålagt)"],
+   special:["NULLTOLERANSE for alkohol","Lys alltid på utenfor tettsted","Mobilforbud","Vinterutrustning anbefalt (okt–mar)"],
+   klasse_b:"Fullt gyldig. D1-kategori (inntil 3,5t, inntil 8 seter + sjåfør – din bobil er innenfor).",
+   alert:"🔴 E-vignett: ematrica.hu. Kjøp D1-kategori. Bøter er høye ved manglende vignett (kontroll uten stopp via kamera)."},
+
+  {flag:"🇭🇷",name:"Kroatia",vignett:"Bompenger (ingen vignett)",vignett_url:"https://hac.hr",
+   vignett_note:"Bom på alle motorveier (A-veier). Betal med Visa/MC. Kategorisert etter kjøretøyhøyde. Høyde >1,90m = høyere kategori. HAC ENC-brikke kan kjøpes på grensen.",
+   speed:[130,90,50],alcohol:"0,5 ‰",
+   utstyr:["Varseltrekant (lovpålagt)","Refleksvest (lovpålagt)","Førstehjelp (lovpålagt)","Brannslukker (lovpålagt i bobil)"],
+   special:["Lys på nov–mar (anbefalt hele året)","Barn under 2: bakovervendt sete","Bom betales fortløpende – ha kort klart","Nulltoleranse under 24 år / under 2 år erfaring"],
+   klasse_b:"Fullt gyldig. OBS: din bobil er 3,1m høy – faller i høyere bom-kategori (dyrere enn personbil).",
+   alert:"⚠️ Bobilen din (3,1 m) kategoriseres som kategori 2 i bom (ikke personbil). Regn med ca €50–80 ekstra i bomtoll for Istria-turene."},
+
+  {flag:"🇸🇮",name:"Slovenia",vignett:"E-vinjeta påbudt",vignett_url:"https://evinjeta.dars.si",
+   vignett_note:"Kjøp på evinjeta.dars.si. Kategori 2A: bobil/campingvogn inntil 3500 kg og under 1,3 m bredde etter speil. 7 dager ca €15 / 1 mnd ca €30 / 1 år ca €110.",
+   speed:[130,100,50],alcohol:"0,5 ‰",
+   utstyr:["Varseltrekant (lovpålagt)","Refleksvest EN 471 (lovpålagt – én pr passasjer i bil)","Førstehjelp (lovpålagt)"],
+   special:["Lys alltid på","Vinterdekk 15. nov – 15. mars (eller kjetting)","Mobilforbud","Tonede vinduer max 30%"],
+   klasse_b:"Fullt gyldig. Klasse 2A for e-vinjeta.",
+   alert:"🔴 E-vinjeta: evinjeta.dars.si FØR grensepassering. Kontroller at bredde etter utvendige speil er under 1,3 m for kategori 2A."},
+
+  {flag:"🇦🇹",name:"Østerrike",vignett:"Vignett påbudt",vignett_url:"https://www.asfinag.at",
+   vignett_note:"Kjøp på asfinag.at (digital) eller ved grensen. Under 3500 kg: 10 dager ca €9,90 / 2 mnd ca €27,80 / 1 år ca €96,40. Klistremerke settes på vinduet (eller digital registrering).",
+   speed:[130,100,50],alcohol:"0,5 ‰",
+   utstyr:["Varseltrekant (lovpålagt)","Refleksvest (lovpålagt)","Førstehjelp (lovpålagt)"],
+   special:["Lys i tunneler (mange lange tunneler på ruten)","Vinterdekk 1. nov – 15. april ved snø/is","Mobilforbud","Trafikkovervåkning: seksjonsfartsmåling (ABSCHNITTSKONTROLLE) – hold hastigheten!"],
+   klasse_b:"Fullt gyldig. Under 3500 kg = PKW. Vignett standard kategori.",
+   alert:"⚠️ Vignett: kjøp på asfinag.at FØR du kjører inn på motorvei. Bøter for manglende vignett er €120+. Seksjonsfartsmåling er vanlig – hold deg under grensen hele strekningen."},
+];
+
+/* ============================================================
+   COUNTRY / CURRENCY HELPERS
+   ============================================================ */
+const CURR_LABELS=['EUR','NOK','SEK','PLN','CZK','HUF'];
+const CURR_RATES={EUR:1,SEK:0.089,PLN:0.23,CZK:0.041,HUF:0.0026};
+function toEUR(amount,curr,r){
+  if(!amount)return 0;
+  if(curr==='EUR')return amount;
+  if(curr==='NOK')return amount/(r||11.5);
+  return amount*(CURR_RATES[curr]||1);
+}
+
+const COUNTRY_MAP=[
+  {code:'NO',flag:'🇳🇴',keys:['norge','norway','oslo','molde','bergen','trondheim','midsund','kristiansand','stavanger']},
+  {code:'SE',flag:'🇸🇪',keys:['sverige','sweden','trelleborg','stockholm','göteborg','malmö','gothenburg']},
+  {code:'DE',flag:'🇩🇪',keys:['germany','deutschland','rostock','potsdam','berlin','hamburg','münchen','frankfurt','köln']},
+  {code:'PL',flag:'🇵🇱',keys:['poland','polen','warszawa','warsaw','kraków','krakow','wieliczka','gdansk','wrocław','katowice']},
+  {code:'CZ',flag:'🇨🇿',keys:['czech','tsjekkia','tjekkia','prague','praha','sedmihorky','bohemsk','brno','pardubice']},
+  {code:'SK',flag:'🇸🇰',keys:['slovakia','bratislava','košice','kosice','žilina']},
+  {code:'HU',flag:'🇭🇺',keys:['hungary','ungarn','budapest','debrecen','pécs','pecs','györ']},
+  {code:'HR',flag:'🇭🇷',keys:['croatia','kroatia','pula','zagreb','split','rovinj','dubrovnik','fažana','fazana','rijeka','istria','zadar']},
+  {code:'SI',flag:'🇸🇮',keys:['slovenia','bled','ljubljana','maribor','kranjska','koper']},
+  {code:'AT',flag:'🇦🇹',keys:['austria','østerrike','innsbruck','wien','salzburg','graz','linz']},
+];
+function detectCountry(text){
+  if(!text)return null;
+  const t=text.toLowerCase();
+  for(const c of COUNTRY_MAP){if(c.keys.some(k=>t.includes(k)))return c.code;}
+  return null;
+}
+function getCI(code){
+  const cm=COUNTRY_MAP.find(x=>x.code===code);
+  return cm?COUNTRIES.find(c=>c.flag===cm.flag)||null:null;
+}
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let legs, books, vignettes, nL, nB;
+
+function loadState(){
+  // Migrer fra gammel nøkkel bv3 dersom bv4 ikke finnes
+  if(!localStorage.getItem("bv4")&&localStorage.getItem("bv3")){
+    localStorage.setItem("bv4",localStorage.getItem("bv3"));
+  }
+  const d=JSON.parse(localStorage.getItem("bv4")||"null");
+  legs  = d?(d.legs  ||cp(DEFAULT_LEGS)) :cp(DEFAULT_LEGS);
+  books = d?(d.books ||cp(DEFAULT_BOOKS)):cp(DEFAULT_BOOKS);
+  vignettes = d?(d.vignettes||{}):{};
+  legs.forEach(l=>{
+    if(!l.sights)l.sights=[];
+    if(!l.tips)l.tips=[];
+    if(!l.diesel)l.diesel=[];
+    if(l.faktKost===undefined)l.faktKost=0;
+    if(!l.faktKostCurr)l.faktKostCurr='EUR';
+    if(l.ferdig===undefined)l.ferdig=false;
+    if(l.kostnad===undefined)l.kostnad=l.faktKost||0;
+    if(!l.kostnadCurr)l.kostnadCurr=l.faktKostCurr||'EUR';
+    if(!l.betalingType)l.betalingType=l.type==='ferge'?'betalt':'ved-ankomst';
+    if(l.depositumBetalt===undefined)l.depositumBetalt=0;
+  });
+  nL=Math.max(0,...legs.map(l=>l.id))+1;
+  nB=Math.max(0,...books.map(b=>b.id))+1;
+}
+function sv(){
+  localStorage.setItem("bv4",JSON.stringify({legs,books,vignettes}));
+  localStorage.setItem("bv4s",JSON.stringify(gs()));
+}
+function loadSet(){
+  const s=JSON.parse(localStorage.getItem("bv4s")||"{}");
+  if(s.p!==undefined)gi("ip").value=s.p;
+  if(s.c!==undefined)gi("ic").value=s.c;
+  if(s.f!==undefined)gi("if").value=s.f;
+  if(s.v!==undefined)gi("iv").value=s.v;
+  if(s.ca!==undefined)gi("ica").value=s.ca;
+  if(s.r!==undefined)gi("ir").value=s.r;
+  if(s.is!==undefined)gi("is").value=s.is;
+  if(s.ff!==undefined&&s.ff)gi("iff").value=s.ff;
+  if(s.fca!==undefined&&s.fca)gi("ifca").value=s.fca;
+}
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+const gi  = id=>document.getElementById(id);
+const cp  = o =>JSON.parse(JSON.stringify(o));
+const fmt = n =>n.toLocaleString("no-NO",{maximumFractionDigits:0});
+const fE  = n =>"€"+fmt(n);
+const fL  = n =>fmt(n)+" L";
+const esc = s =>(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
+function gs(){
+  return{
+    p:parseFloat(gi("ip").value)||1.65,c:parseFloat(gi("ic").value)||11,
+    f:parseFloat(gi("if").value)||460,v:parseFloat(gi("iv").value)||170,
+    ca:parseFloat(gi("ica").value)||38,r:parseFloat(gi("ir").value)||11.5,
+    is:parseFloat(gi("is").value)||75,
+    ff:parseFloat(gi("iff").value)||0,
+    fca:parseFloat(gi("ifca").value)||0
+  };
+}
+function calcAnk(avg,km,spd){
+  if(!avg||!km||!spd)return"";
+  const pts=avg.split(":");if(pts.length<2)return"";
+  const h=parseInt(pts[0]),m=parseInt(pts[1]);
+  if(isNaN(h)||isNaN(m))return"";
+  const total=h*60+m+(km/spd*60);
+  const ah=Math.floor(total/60)%24,am=Math.round(total%60);
+  const over=total>=1440?"+1":"";
+  return`${String(ah).padStart(2,"0")}:${String(am).padStart(2,"0")}${over}`;
+}
+function setAnk(id){
+  const l=legs.find(x=>x.id===id);if(!l||l.type==="ferge")return;
+  const s=gs(),na=calcAnk(l.avg,l.km,s.is);if(!na)return;
+  l.ank=na;
+  const tr=document.querySelector(`tr[data-id="${id}"]`);
+  if(tr){const a=tr.querySelector('[data-field="ank"]');if(a)a.value=na;}
+}
+function saveSights(id,field,val){
+  const l=legs.find(x=>x.id===id);if(!l)return;
+  l[field]=val.split("\n").map(s=>s.trim()).filter(s=>s);
+  sv();
+}
+function mapU(fra,til){
+  if(!fra||!til) return "";
+  return"https://www.google.com/maps/dir/?api=1&origin="+encodeURIComponent(fra)+"&destination="+encodeURIComponent(til);
+}
+function effMap(l){return(l.fra&&l.til?mapU(l.fra,l.til):"")||l.mapUrl||"";}
+function lFl(l,c){return(l.km||0)/100*c;}
+function lCo(l,c,p){return lFl(l,c)*p;}
+
+/* ============================================================
+   METRICS
+   ============================================================ */
+function upMet(){
+  const s=gs();
+  const tkm=legs.reduce((a,l)=>a+(l.km||0),0);
+  const tfl=legs.reduce((a,l)=>a+lFl(l,s.c),0);
+  const fco=tfl*s.p;
+  const nights=legs.filter(l=>l.overnatting&&l.type!=="ferge"&&
+    l.overnatting!=="Hjemme – egen leilighet"&&
+    l.overnatting!=="Hjemme"&&l.overnatting!=="Om bord (ferge)").length;
+  const cco=nights*s.ca;
+  const tot=fco+s.f+s.v+cco;
+  gi("m0").innerHTML=fmt(tkm)+'<small> km</small>';
+  gi("m1").innerHTML=fmt(tfl)+'<small> L</small>';
+  gi("m2").textContent=fE(fco);
+  gi("m3").textContent=fE(s.f+s.v);
+  gi("m4").innerHTML=fE(cco)+'<small style="font-size:.62rem;color:var(--muted)"> '+nights+'n</small>';
+  gi("m5").textContent=fE(tot);
+  gi("m6").innerHTML=fmt(tot*s.r)+'<small> kr</small>';
+  // Faktiske kostnader (per etappe + drivstoff-kvitteringer + vignetter)
+  const aktDiesel=legs.reduce((a,l)=>a+(l.diesel||[]).reduce((b,d)=>b+toEUR((d.liter||0)*(d.pris||0),d.curr||'EUR',s.r),0),0);
+  const aktFerge=legs.filter(l=>l.type==='ferge'&&l.faktKost>0).reduce((a,l)=>a+toEUR(l.faktKost,l.faktKostCurr,s.r),0);
+  const aktCamp=legs.filter(l=>l.type==='opphold'&&l.faktKost>0).reduce((a,l)=>a+toEUR(l.faktKost,l.faktKostCurr,s.r),0);
+  const vigPaid=Object.values(vignettes||{}).reduce((a,vg)=>a+(vg.ok&&vg.pris?toEUR(vg.pris,vg.curr||'EUR',s.r):0),0);
+  const hasFact=aktDiesel>0||aktFerge>0||aktCamp>0||vigPaid>0||s.ff>0||s.fca>0;
+  const faktDiesel=aktDiesel>0?aktDiesel:fco;
+  const faktFerge=aktFerge>0?aktFerge:s.ff;
+  const faktCamp=aktCamp>0?aktCamp:nights*s.fca;
+  const faktVig=vigPaid>0?vigPaid:s.v;
+  const factTot=faktDiesel+faktFerge+faktCamp+faktVig;
+  const m7c=gi('m7card'),m8c=gi('m8card');
+  if(m7c)m7c.style.display=hasFact?'':'none';
+  if(m8c)m8c.style.display=hasFact?'':'none';
+  if(hasFact){
+    gi("m7").textContent=fE(factTot);
+    gi("m8").innerHTML=fmt(factTot*s.r)+'<small> kr</small>';
+  }
+  gi("fkm").textContent=fmt(tkm)+" km";
+  gi("ffl").textContent=fmt(tfl)+" L";
+  gi("fco").textContent=fE(fco);
+}
+
+/* ============================================================
+   RENDER TRIP TABLE
+   ============================================================ */
+function vigRow(code){
+  const ci=getCI(code);
+  const cm=COUNTRY_MAP.find(x=>x.code===code);
+  if(!ci||!cm)return'';
+  const vg=vignettes[code]||{};
+  const needsVig=!!(ci.vignett_url);
+  const isOk=vg.ok;
+  const s=gs();
+  const co=CURR_LABELS.map(c=>`<option${(vg.curr||'EUR')===c?' selected':''}>${c}</option>`).join('');
+  return`<tr class="brow${isOk?' ok':''}" data-vigcode="${code}">
+<td colspan="16"><div class="brow-inner">
+  <span style="font-size:1.2rem">${cm.flag}</span>
+  <b style="color:${isOk?'var(--good)':'var(--warn)'}">${isOk?'✓ ':'🚧 '}Krysser inn i ${ci.name}</b>
+  <span style="color:var(--muted);font-size:.73rem">${ci.vignett}</span>
+  ${ci.vignett_url?`<a href="${ci.vignett_url}" target="_blank" class="res-link" style="font-size:.7rem">→ Kjøp vignett</a>`:''}
+  ${ci.vignett_note?`<span style="color:var(--muted);font-size:.69rem;max-width:320px">${ci.vignett_note}</span>`:''}
+  ${needsVig?`<div style="display:flex;align-items:center;gap:6px;margin-left:auto;flex-wrap:wrap">
+    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:.73rem">
+      <input type="checkbox"${isOk?' checked':''} onchange="setVig('${code}','ok',this.checked)">
+      Bekreftet
+    </label>
+    <input type="number" value="${vg.pris||''}" placeholder="Pris" class="si" style="width:54px;text-align:right" oninput="setVig('${code}','pris',+this.value)">
+    <select class="ss" onchange="setVig('${code}','curr',this.value)">${co}</select>
+    ${isOk&&vg.pris?`<span style="font-size:.72rem;color:var(--good)">≈€${toEUR(vg.pris,vg.curr||'EUR',s.r).toFixed(0)}</span>`:''}
+  </div>`:''}
+</div></td></tr>`;
+}
+
+function renderTrip(){
+  const s=gs();
+  const typeOpts=t=>["kjøre","ferge","opphold","avstikker"].map(v=>
+    `<option value="${v}"${t===v?" selected":""}>${{kjøre:"Kjøredag",ferge:"Ferge",opphold:"Opphold",avstikker:"Avstikker 🔀"}[v]}</option>`
+  ).join("");
+  const statOpts=sv=>["ikke-bestilt","bestilt","bekreftet"].map(v=>
+    `<option value="${v}"${sv===v?" selected":""}>${{"ikke-bestilt":"Ikke bestilt","bestilt":"Bestilt","bekreftet":"Bekreftet"}[v]}</option>`
+  ).join("");
+  const cOpts=sel=>CURR_LABELS.map(c=>`<option${sel===c?' selected':''}>${c}</option>`).join('');
+
+  // Pre-compute which dates have ALL legs ferdig + last index per date
+  const dateGroups={};
+  const lastDateIdx={};
+  legs.forEach((l,i)=>{
+    const d=l.dato||'__';
+    if(!dateGroups[d])dateGroups[d]={total:0,done:0};
+    dateGroups[d].total++;
+    if(l.ferdig)dateGroups[d].done++;
+    if(d!=='__')lastDateIdx[d]=i;
+  });
+  const ferdigDates=new Set(Object.entries(dateGroups)
+    .filter(([d,g])=>d!=='__'&&g.done===g.total&&g.total>0).map(([d])=>d));
+
+  let rows=[];
+  let prevCo=detectCountry(legs[0]?.fra);
+
+  legs.forEach((l,i)=>{
+    const destCo=detectCountry(l.til);
+    if(destCo&&destCo!==prevCo){rows.push(vigRow(destCo));prevCo=destCo;}
+
+    const fl=lFl(l,s.c),co=lCo(l,s.c,s.p);
+    const mu=effMap(l);
+    const rc=l.type==="ferge"?" rf":l.type==="opphold"?" ro":l.type==="avstikker"?" ra":"";
+    const nCls=l.note&&(l.note[0]==="⚠"||l.note[0]==="✈"||l.note[0]==="🎯"||l.note[0]==="🏁")?" nw":"";
+
+    // Kost-celle: editerbar kostnad + betalingstype for alle etapper
+    const isCostLeg=l.type==='ferge'||l.type==='opphold';
+    const hasDeposit=l.betalingType==='depositum';
+    const btLabel={betalt:'💳',ved_ankomst:'🏕️',depositum:'⬡'}[l.betalingType]||'💳';
+    const kostCell=isCostLeg
+      ?`<td style="padding:2px 4px">
+          <div style="display:flex;align-items:center;gap:2px">
+            <input type="number" value="${l.kostnad||''}" placeholder="0" class="si"
+              style="width:55px;text-align:right;font-size:.78rem" oninput="setKostnad(${l.id},'kostnad',this.value)" title="Kostnad">
+            <select class="ss" style="font-size:.63rem;padding:1px 2px" onchange="setKostnad(${l.id},'kostnadCurr',this.value)">
+              ${cOpts(l.kostnadCurr||'EUR')}
+            </select>
+          </div>
+          <select class="ss" style="font-size:.62rem;padding:1px 2px;width:100%;margin-top:2px" onchange="setKostnad(${l.id},'betalingType',this.value)">
+            <option value="betalt"${l.betalingType==='betalt'?' selected':''}>💳 Forhånd</option>
+            <option value="ved-ankomst"${l.betalingType==='ved-ankomst'?' selected':''}>🏕 Ankomst</option>
+            <option value="depositum"${l.betalingType==='depositum'?' selected':''}>⬡ Depositum</option>
+          </select>
+          ${hasDeposit?`<div class="kost-dep">Dep:<input type="number" value="${l.depositumBetalt||''}" placeholder="0" class="si" style="width:42px;font-size:.62rem;text-align:right" oninput="setKostnad(${l.id},'depositumBetalt',this.value)"></div>`:''}
+        </td>`
+      :`<td class="cc kc">${l.km>0?fE(co):'–'}</td>`;
+
+    // Drivstoff-kvitteringer (kun for kjøre/avstikker)
+    let dieselHtml='';
+    if(l.type==='kjøre'||l.type==='avstikker'){
+      const dl=l.diesel||[];
+      const est=`<span style="font-size:.72rem;color:var(--muted)">Estimert: ${l.km>0?fL(fl)+' × €'+s.p.toFixed(2)+'/L = '+fE(co):'–'}</span>`;
+      const fillRows=dl.map((d,di)=>{
+        const tot=(d.liter||0)*(d.pris||0);
+        return`<div style="display:flex;gap:4px;align-items:center;margin:3px 0;flex-wrap:wrap">
+          <input type="number" value="${d.liter||''}" placeholder="Liter" class="si" style="width:50px" oninput="setDiesel(${l.id},${di},'liter',this.value)">
+          <span style="font-size:.7rem;color:var(--muted)">L ×</span>
+          <input type="number" value="${d.pris||''}" placeholder="kr/L" step="0.01" class="si" style="width:56px" oninput="setDiesel(${l.id},${di},'pris',this.value)">
+          <select class="ss" onchange="setDiesel(${l.id},${di},'curr',this.value)">${cOpts(d.curr||'EUR')}</select>
+          <span style="font-size:.72rem;color:var(--accent);min-width:68px">${tot>0?'= '+tot.toFixed(1)+' '+(d.curr||'EUR'):''}</span>
+          <button class="del" onclick="delDiesel(${l.id},${di})">✕</button>
+        </div>`;
+      }).join('');
+      dieselHtml=`<div style="margin-top:10px;border-top:1px solid var(--line);padding-top:8px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+          <span style="font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;color:var(--warn);font-weight:600">⛽ Drivstoff-kvitteringer</span>
+          <button class="bo" onclick="addDiesel(${l.id})" style="font-size:.68rem;padding:2px 7px;color:var(--warn);border-color:var(--warn)">+ Legg til fylling</button>
+        </div>
+        ${est}${fillRows?`<div style="margin-top:5px">${fillRows}</div>`:''}
+      </div>`;
+    }
+
+    const sRow=`<tr class="str" id="st${l.id}" style="display:none"><td colspan="15">
+<div class="sp">
+  <div>
+    <h4>Severdigheter <span style="font-size:.65rem;color:var(--muted);font-weight:400;text-transform:none">(én per linje – rediger direkte)</span></h4>
+    <textarea onchange="saveSights(${l.id},'sights',this.value)" style="height:${Math.max(64,(l.sights||[]).length*22+22)}px">${esc((l.sights||[]).join("\n"))}</textarea>
+  </div>
+  <div>
+    <h4>Turtips <span style="font-size:.65rem;color:var(--muted);font-weight:400;text-transform:none">(én per linje)</span></h4>
+    <textarea onchange="saveSights(${l.id},'tips',this.value)" style="height:${Math.max(64,(l.tips||[]).length*22+22)}px">${esc((l.tips||[]).join("\n"))}</textarea>
+  </div>
+</div>
+${dieselHtml}
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center">
+  <button class="bo" onclick="fetchSights(${l.id})" style="font-size:.72rem;padding:3px 9px">🔄 Hent severdigheter fra Maps</button>
+  <button onclick="clearSights(${l.id})" style="font-size:.72rem;padding:3px 9px;background:none;border:1px solid var(--bad);color:var(--bad);border-radius:5px;cursor:pointer">🗑 Tøm</button>
+  <span id="ss${l.id}" style="font-size:.7rem;color:var(--muted)"></span>
+</div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+  <a class="res-link" href="#" onmousedown="this.href=resUrl(${l.id},'wiki')" target="_blank">📖 Wikipedia</a>
+  <a class="res-link" href="#" onmousedown="this.href=resUrl(${l.id},'acsi')" target="_blank">🏕 ACSI campinger</a>
+  <a class="res-link" href="#" onmousedown="this.href=resUrl(${l.id},'camp')" target="_blank">⛺ Camping i Maps</a>
+  <a class="res-link" href="#" onmousedown="this.href=resUrl(${l.id},'google')" target="_blank">🔍 Google-søk</a>
+</div>
+</td></tr>`;
+
+    rows.push(`<tr data-id="${l.id}" class="ml${rc}${l.ferdig?' done-row':''}">
+<td style="text-align:center;padding:2px">
+  <input type="checkbox" class="done-cb"${l.ferdig?' checked':''} onchange="setFerdig(${l.id},this.checked)" title="${l.ferdig?'Ferdig ✓':'Merk som ferdig'}">
+</td>
+<td style="text-align:center;padding:2px">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:1px">
+    <span style="font-size:.64rem;color:var(--muted)">${i+1}</span>
+    <button class="ib${(l.sights&&l.sights.length)||(l.tips&&l.tips.length)?' on':''}" onclick="togS(${l.id})" id="ib${l.id}" title="Severdigheter / rediger info">📍</button>
+  </div>
+</td>
+<td><input type="date" value="${l.dato}" data-field="dato" onchange="fld(${l.id},'dato',this.value)"></td>
+<td><input type="text" value="${esc(l.fra)}" placeholder="Fra…" data-field="fra" onchange="fld(${l.id},'fra',this.value)" oninput="lMap(${l.id},this,'fra')"></td>
+<td><input type="text" value="${esc(l.til)}" placeholder="Til…" data-field="til" onchange="fld(${l.id},'til',this.value)" oninput="lMap(${l.id},this,'til')"></td>
+<td><input type="text" value="${esc(l.overnatting)}" placeholder="Overnatting…" data-field="overnatting" onchange="fld(${l.id},'overnatting',this.value)"></td>
+<td><select data-val="${l.type}" onchange="this.dataset.val=this.value;fld(${l.id},'type',this.value);trc(${l.id},this.value)">${typeOpts(l.type)}</select></td>
+<td><input type="number" value="${l.km||""}" placeholder="0" style="width:54px" data-field="km" oninput="kmI(${l.id},+this.value)" onchange="sv()"></td>
+<td><input type="text" value="${esc(l.avg)}" placeholder="09:00" style="width:48px" onchange="fld(${l.id},'avg',this.value)"></td>
+<td><input type="text" value="${esc(l.ank)}" placeholder="12:00" style="width:48px" data-field="ank" onchange="fld(${l.id},'ank',this.value)"></td>
+<td class="cc fc">${l.km>0?fL(fl):"–"}</td>
+${kostCell}
+<td><select data-val="${l.status}" onchange="this.dataset.val=this.value;fld(${l.id},'status',this.value)">${statOpts(l.status)}</select></td>
+<td style="text-align:center"><a class="mab${mu?"":" off"}" id="ml${l.id}" href="${mu||"#"}" target="_blank" title="Åpne i Google Maps">🗺</a></td>
+<td><input type="text" value="${esc(l.note)}" placeholder="Notat…" class="${nCls}" style="font-size:.72rem${nCls?";color:var(--warn)":""}" onchange="fld(${l.id},'note',this.value)"></td>
+<td style="text-align:center;white-space:nowrap">
+  <button class="ib" onclick="moveLeg(${l.id},-1)" title="Flytt opp">↑</button>
+  <button class="ib" onclick="moveLeg(${l.id},1)" title="Flytt ned">↓</button>
+  <button class="del" onclick="delLeg(${l.id})" title="Slett">✕</button>
+</td>
+</tr>${sRow}`);
+
+    // Insert day-summary row once, after the last occurrence of a fully-ferdig date
+    if(l.dato&&ferdigDates.has(l.dato)&&lastDateIdx[l.dato]===i){
+      rows.push(daySummaryRow(l.dato,i,s));
+    }
+  });
+
+  gi("tb").innerHTML=rows.join("");
+  upMet();
+}
+
+/* ============================================================
+   LEG OPERATIONS
+   ============================================================ */
+function fld(id,field,val){
+  const l=legs.find(x=>x.id===id); if(!l) return;
+  const oldVal=l[field];
+  l[field]=field==="km"?(parseFloat(val)||0):val;
+  sv();
+  if(field==="avg"||field==="km") setAnk(id);
+  // Marker km som utdatert når Fra/Til endres – brukeren må sjekke kart og oppdatere
+  if(field==="fra"||field==="til"){
+    const tr2=document.querySelector(`tr[data-id="${id}"]`);
+    if(tr2){
+      const ki=tr2.querySelector('[data-field="km"]');
+      if(ki){ki.classList.add('km-stale');ki.title='Oppdater km fra kartet ↗';}
+      const ma=document.getElementById("ml"+id);
+      if(ma&&!ma.classList.contains('off')){
+        ma.classList.add('stale');
+        ma.title='← Klikk, se km i Maps, skriv tilbake';
+      }
+    }
+    // Tøm alltid sights/tips ved destinasjonsendring (ny eller tom)
+    if(field==="til"){
+      l.sights=[];l.tips=[];sv();
+      const stRow=document.getElementById('st'+id);
+      if(stRow){
+        const tas=stRow.querySelectorAll('textarea');
+        if(tas[0])tas[0].value='';
+        if(tas[1])tas[1].value='';
+      }
+      const ibBtn=document.getElementById('ib'+id);
+      if(ibBtn)ibBtn.classList.remove('on');
+      if(val){fetchKm(id);fetchSights(id);}
+    } else if(field==="fra"){
+      fetchKm(id);
+    }
+  }
+  // Kjedekjøring: endre Til → oppdater neste etappes Fra (ikke for avstikker)
+  if(field==="til"&&l.type!=="avstikker"){
+    const idx=legs.findIndex(x=>x.id===id);
+    if(idx>=0&&idx<legs.length-1){
+      const next=legs[idx+1];
+      if(!next.fra||next.fra===oldVal){
+        next.fra=val;
+        const nTr=document.querySelector(`tr[data-id="${next.id}"]`);
+        if(nTr){
+          const fraInp=nTr.querySelector('[data-field="fra"]');
+          if(fraInp){fraInp.value=val;lMap(next.id,fraInp,'fra');}
+        }
+      }
+    }
+  }
+}
+function kmI(id,val){
+  const l=legs.find(x=>x.id===id); if(!l) return;
+  l.km=val||0;
+  const s=gs(),fl=lFl(l,s.c),co=lCo(l,s.c,s.p);
+  const tr=document.querySelector(`tr[data-id="${id}"]`);
+  if(tr){
+    tr.querySelector(".fc").textContent=l.km>0?fL(fl):"–";
+    tr.querySelector(".kc").textContent=l.km>0?fE(co):"–";
+    // Fjern "utdatert"-markering når km oppdateres
+    const ki=tr.querySelector('[data-field="km"]');
+    if(ki){ki.classList.remove('km-stale');ki.title="";}
+    const ma=document.getElementById("ml"+id);
+    if(ma){ma.classList.remove('stale');ma.title="Åpne i Google Maps";}
+  }
+  upMet();
+  setAnk(id);
+}
+function lMap(id,inp,field){
+  const l=legs.find(x=>x.id===id); if(!l) return;
+  l[field]=inp.value;
+  const url=effMap(l);
+  const a=document.getElementById("ml"+id);
+  if(a){a.href=url||"#";a.classList.toggle("off",!url);}
+}
+function trc(id,type){
+  const tr=document.querySelector(`tr[data-id="${id}"]`); if(!tr) return;
+  tr.className="ml"+(type==="ferge"?" rf":type==="opphold"?" ro":type==="avstikker"?" ra":"");
+}
+function togS(id){
+  const sr=document.getElementById("st"+id);
+  const btn=document.getElementById("ib"+id);
+  if(!sr) return;
+  const vis=sr.style.display!=="none";
+  sr.style.display=vis?"none":"";
+  if(btn) btn.classList.toggle("on",!vis);
+}
+function addLeg(type){
+  const t=type||"kjøre";
+  const last=legs[legs.length-1];
+  legs.push({id:nL++,dato:"",fra:last?(last.til||""):"",til:"",overnatting:"",
+    type:t,km:0,avg:"09:00",ank:"",status:"ikke-bestilt",note:"",mapUrl:"",sights:[],tips:[],
+    ferdig:false,kostnad:0,kostnadCurr:"EUR",
+    betalingType:t==='ferge'?'betalt':t==='opphold'?'ved-ankomst':'betalt',
+    depositumBetalt:0});
+  sv(); renderTrip();
+}
+function delLeg(id){legs=legs.filter(l=>l.id!==id);sv();renderTrip();}
+function moveLeg(id,dir){
+  const idx=legs.findIndex(l=>l.id===id);
+  if(idx<0)return;
+  const swap=idx+dir;
+  if(swap<0||swap>=legs.length)return;
+  [legs[idx],legs[swap]]=[legs[swap],legs[idx]];
+  sv();renderTrip();
+}
+function onSet(){
+  sv();
+  const s=gs();
+  document.querySelectorAll("tr[data-id]").forEach(tr=>{
+    const l=legs.find(x=>x.id===+tr.dataset.id); if(!l) return;
+    tr.querySelector(".fc").textContent=l.km>0?fL(lFl(l,s.c)):"–";
+    tr.querySelector(".kc").textContent=l.km>0?fE(lCo(l,s.c,s.p)):"–";
+    setAnk(l.id);
+  });
+  upMet();
+}
+
+/* ============================================================
+   OPENSTREETMAP – AUTOMATISK KM + SEVERDIGHETER (GRATIS)
+   ============================================================ */
+const geoCache={};
+let _lastNomReq=0;
+
+async function geocodePlace(query){
+  if(!query)return null;
+  const key=query.toLowerCase().trim();
+  if(geoCache[key])return geoCache[key];
+  // Nominatim rate limit: maks 1 req/sek
+  const now=Date.now();
+  const wait=Math.max(0,_lastNomReq+1100-now);
+  if(wait>0)await new Promise(r=>setTimeout(r,wait));
+  _lastNomReq=Date.now();
+  try{
+    const res=await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`,
+      {headers:{'User-Agent':'BobilturDashboard/2026'}}
+    );
+    const data=await res.json();
+    if(data[0]){
+      const r={lat:parseFloat(data[0].lat),lon:parseFloat(data[0].lon)};
+      geoCache[key]=r;
+      return r;
+    }
+  }catch(e){console.warn('Nominatim feil:',e);}
+  return null;
+}
+
+/* Google Places – severdigheter (valgfritt, aktiveres med API-nøkkel) */
+let placesReady=false,geocoder=null,placesService=null,placesDiv=null;
+function loadPlacesApi(key){
+  if(!key||document.getElementById('gm-sdk'))return;
+  window._gmCb=function(){
+    geocoder=new google.maps.Geocoder();
+    placesDiv=document.createElement('div');
+    placesService=new google.maps.places.PlacesService(placesDiv);
+    placesReady=true;
+    const st=gi('gm-st');
+    if(st){st.textContent='✓ Google Places klar – høy kvalitet på severdigheter';st.style.color='var(--good)';}
+  };
+  const s=document.createElement('script');s.id='gm-sdk';
+  s.onerror=()=>{const st=gi('gm-st');if(st){st.textContent='✗ Ugyldig nøkkel eller API ikke aktivert';st.style.color='var(--bad)';}};
+  s.src=`https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&libraries=places&callback=_gmCb`;
+  document.head.appendChild(s);
+  const st=gi('gm-st');if(st){st.textContent='… laster Google Places';st.style.color='var(--muted)';}
+}
+function setGmKey(key){
+  key=(key||'').trim();
+  if(key){localStorage.setItem('gmkey',key);if(!document.getElementById('gm-sdk'))loadPlacesApi(key);}
+  else{localStorage.removeItem('gmkey');const st=gi('gm-st');if(st){st.textContent='Ikke satt – bruker OSM';st.style.color='var(--muted)';}}
+}
+
+async function fetchKm(id){
+  const l=legs.find(x=>x.id===id);
+  if(!l||!l.fra||!l.til)return;
+  if(l.type==='ferge'||l.type==='opphold')return;
+  const tr=document.querySelector(`tr[data-id="${id}"]`);
+  const ki=tr?tr.querySelector('[data-field="km"]'):null;
+  if(ki){ki.placeholder='…';ki.disabled=true;ki.style.opacity='.5';}
+  try{
+    const [fra,til]=await Promise.all([geocodePlace(l.fra),geocodePlace(l.til)]);
+    const ki2=document.querySelector(`tr[data-id="${id}"] [data-field="km"]`);
+    if(ki2){ki2.disabled=false;ki2.placeholder='0';ki2.style.opacity='';}
+    if(!fra||!til){if(ki2)ki2.classList.add('km-stale');return;}
+    const url=`https://router.project-osrm.org/route/v1/driving/${fra.lon},${fra.lat};${til.lon},${til.lat}?overview=false`;
+    const res=await fetch(url);
+    const data=await res.json();
+    if(data.code==='Ok'&&data.routes[0]){
+      const km=Math.round(data.routes[0].distance/1000);
+      l.km=km;
+      if(ki2){ki2.value=km;ki2.classList.remove('km-stale');ki2.title='';}
+      const ma=document.getElementById('ml'+id);
+      if(ma){ma.classList.remove('stale');ma.title='Åpne i Google Maps';}
+      const s=gs(),fl=lFl(l,s.c),co=lCo(l,s.c,s.p);
+      const tr2=document.querySelector(`tr[data-id="${id}"]`);
+      if(tr2){
+        const fc=tr2.querySelector('.fc');
+        const kc=tr2.querySelector('.kc');
+        if(fc)fc.textContent=km>0?fL(fl):'–';
+        if(kc)kc.textContent=km>0?fE(co):'–';
+      }
+      sv();upMet();setAnk(id);
+    } else {
+      if(ki2)ki2.classList.add('km-stale');
+    }
+  }catch(e){
+    const ki2=document.querySelector(`tr[data-id="${id}"] [data-field="km"]`);
+    if(ki2){ki2.disabled=false;ki2.placeholder='0';ki2.style.opacity='';ki2.classList.add('km-stale');}
+    console.warn('OSRM feil:',e);
+  }
+}
+
+function resUrl(id,type){
+  const l=legs.find(x=>x.id===id);
+  const q=l?.til||l?.fra||'';
+  if(!q)return'#';
+  if(type==='wiki')return'https://no.wikipedia.org/w/index.php?search='+encodeURIComponent(q);
+  if(type==='acsi')return'https://www.acsi.eu/campings/?q='+encodeURIComponent(q);
+  if(type==='camp')return'https://www.google.com/maps/search/camping+near+'+encodeURIComponent(q);
+  if(type==='google')return'https://www.google.com/search?q='+encodeURIComponent('severdigheter '+q);
+  return'#';
+}
+function clearSights(id){
+  const l=legs.find(x=>x.id===id);if(!l)return;
+  l.sights=[];l.tips=[];sv();
+  const sr=document.getElementById('st'+id);
+  if(sr){const ts=sr.querySelectorAll('textarea');if(ts[0])ts[0].value='';if(ts[1])ts[1].value='';}
+  const ib=document.getElementById('ib'+id);
+  if(ib)ib.classList.remove('on');
+  updSS(id,'');
+}
+async function fetchSights(id){
+  const l=legs.find(x=>x.id===id);
+  if(!l)return;
+  if(!l.til){updSS(id,'⚠ Fyll inn «Til»-feltet for å hente severdigheter');return;}
+  // Bruk Google Places om nøkkel er satt og klar
+  if(placesReady&&geocoder&&placesService){fetchSightsPlaces(id);return;}
+  updSS(id,'… henter severdigheter fra OpenStreetMap');
+  try{
+    const coords=await geocodePlace(l.til);
+    if(!coords){updSS(id,`⚠ Fant ikke stedet «${l.til}»`);return;}
+    const {lat,lon}=coords;
+
+    const SIGHT_ICONS={
+      museum:'🏛',attraction:'📍',artwork:'🎨',gallery:'🎨',
+      viewpoint:'🔭',zoo:'🦁',theme_park:'🎡',aquarium:'🐟',
+      castle:'🏰',ruins:'🏚',monument:'🗿',memorial:'🕊',
+      archaeological_site:'⛏',fort:'🏰',palace:'🏰',
+      cathedral:'⛪',church:'⛪',monastery:'⛪',temple:'🛕',
+      stadium:'🏟',amphitheatre:'🏛',
+    };
+    const PARK_ICONS={
+      park:'🌳',nature_reserve:'🌿',beach_resort:'🏖',
+      peak:'⛰️',waterfall:'💧',beach:'🏖',hot_spring:'♨️',
+      cave_entrance:'🕳️',valley:'🏞️',
+    };
+
+    // 1. Severdigheter: tourist_attraction + historic fra Overpass
+    const q1=`[out:json][timeout:20];(
+  node["tourism"~"^(attraction|museum|artwork|gallery|viewpoint|zoo|theme_park|aquarium)$"](around:15000,${lat},${lon});
+  way["tourism"~"^(attraction|museum|gallery|viewpoint|zoo|theme_park|aquarium)$"](around:15000,${lat},${lon});
+  node["historic"~"^(castle|ruins|monument|memorial|archaeological_site|fort|palace|amphitheatre)$"](around:12000,${lat},${lon});
+  way["historic"~"^(castle|ruins|monument|memorial|archaeological_site|fort|palace|amphitheatre)$"](around:12000,${lat},${lon});
+  node["amenity"~"^(cathedral|theatre|concert_hall)$"]["name"](around:8000,${lat},${lon});
+  node["building"~"^(cathedral|church|monastery|temple)$"]["name"](around:8000,${lat},${lon});
+);out center 20;`;
+
+    // 2. Turtips: parker, natur, friluftsliv
+    const q2=`[out:json][timeout:15];(
+  way["leisure"~"^(park|nature_reserve)$"]["name"](around:20000,${lat},${lon});
+  node["natural"~"^(peak|waterfall|beach|hot_spring|cave_entrance)$"]["name"](around:18000,${lat},${lon});
+  way["natural"~"^(water|beach)$"]["name"](around:15000,${lat},${lon});
+);out center 8;`;
+
+    const [r1,r2]=await Promise.all([
+      fetch('https://overpass-api.de/api/interpreter',{method:'POST',headers:{'Content-Type':'text/plain'},body:q1}),
+      fetch('https://overpass-api.de/api/interpreter',{method:'POST',headers:{'Content-Type':'text/plain'},body:q2}),
+    ]);
+    const [d1,d2]=await Promise.all([r1.json(),r2.json()]);
+
+    const seen=new Set();
+    const sights=[];
+    (d1.elements||[])
+      .filter(e=>e.tags?.name&&!seen.has(e.tags.name))
+      .slice(0,8)
+      .forEach(e=>{
+        seen.add(e.tags.name);
+        const type=e.tags.tourism||e.tags.historic||e.tags.amenity||e.tags.building||'attraction';
+        const icon=SIGHT_ICONS[type]||'📍';
+        const name=e.tags.name;
+        const extra=e.tags['name:en']&&e.tags['name:en']!==name?` (${e.tags['name:en']})`:'';
+        sights.push(`${icon} ${name}${extra}`);
+      });
+
+    const tips=[];
+    (d2.elements||[])
+      .filter(e=>e.tags?.name&&!seen.has(e.tags.name))
+      .slice(0,5)
+      .forEach(e=>{
+        seen.add(e.tags.name);
+        const type=e.tags.leisure||e.tags.natural||'park';
+        const icon=PARK_ICONS[type]||'🥾';
+        tips.push(`${icon} ${e.tags.name}`);
+      });
+
+    if(!sights.length&&!tips.length){
+      updSS(id,'Ingen attraksjoner funnet i OSM – rediger manuelt eller prøv et annet stedsnavn');
+      return;
+    }
+    applyFS(id,sights,tips);
+  }catch(e){
+    updSS(id,'⚠ Nettverksfeil – prøv igjen');
+    console.warn('fetchSights feil:',e);
+  }
+}
+function fetchSightsPlaces(id){
+  const l=legs.find(x=>x.id===id);if(!l||!l.til)return;
+  updSS(id,'… henter severdigheter fra Google Places');
+  geocoder.geocode({address:l.til},(gRes,gSt)=>{
+    if(gSt!=='OK'||!gRes[0]){updSS(id,`⚠ Fant ikke stedet «${l.til}» (${gSt})`);return;}
+    const loc=gRes[0].geometry.location;
+    let done=0;const ns=[],nt=[];
+    const finish=()=>{if(++done<2)return;applyFS(id,ns,nt);};
+    const icons={museum:'🏛',church:'⛪',art_gallery:'🎨',zoo:'🦁',
+      amusement_park:'🎡',aquarium:'🐟',casino:'🎰',stadium:'🏟'};
+    placesService.nearbySearch({location:loc,radius:15000,type:'tourist_attraction'},(pl,st)=>{
+      if(st==='OK'&&pl) pl.filter(p=>p.rating>=3.5).slice(0,6).forEach(p=>{
+        const ik=p.types.find(t=>icons[t]);
+        ns.push(`${ik?icons[ik]:'📍'} ${p.name}${p.rating?' (★'+p.rating.toFixed(1)+')':''}`);
+      });
+      finish();
+    });
+    placesService.nearbySearch({location:loc,radius:25000,type:'park'},(pl,st)=>{
+      if(st==='OK'&&pl) pl.filter(p=>p.rating>=3.5).slice(0,4).forEach(p=>{
+        nt.push(`🥾 ${p.name}${p.rating?' (★'+p.rating.toFixed(1)+')':''}`);
+      });
+      finish();
+    });
+  });
+}
+function applyFS(id,sights,tips){
+  const l=legs.find(x=>x.id===id);if(!l)return;
+  if(!sights.length&&!tips.length)return; // Ikke overskriv eksisterende med tomme data
+  l.sights=sights;
+  l.tips=tips;
+  sv();
+  const stRow=document.getElementById('st'+id);
+  if(stRow&&stRow.style.display==='none') togS(id);
+  if(stRow){
+    const tas=stRow.querySelectorAll('textarea');
+    if(tas[0])tas[0].value=sights.join('\n');
+    if(tas[1])tas[1].value=tips.join('\n');
+  }
+  const btn=document.getElementById('ib'+id);
+  if(btn)btn.classList.toggle('on',!!(sights.length||tips.length));
+  updSS(id,sights.length?`✓ ${sights.length} severdigheter · ${tips.length} turtips hentet fra Maps`:'✓ Ingen attraksjoner funnet i nærheten');
+}
+function updSS(id,msg){const el=document.getElementById('ss'+id);if(el)el.textContent=msg;}
+
+/* ============================================================
+   BOOKING
+   ============================================================ */
+function renderBooks(){
+  const to=t=>["ferge","camping","attraksjon","fly"].map(v=>
+    `<option value="${v}"${t===v?" selected":""}>${{ferge:"Ferge",camping:"Camping",attraksjon:"Attraksjon",fly:"Fly"}[v]}</option>`
+  ).join("");
+  const so=sv=>["ikke-bestilt","bestilt","bekreftet","ikke-nødvendig"].map(v=>
+    `<option value="${v}"${sv===v?" selected":""}>${{"ikke-bestilt":"Ikke bestilt","bestilt":"Bestilt","bekreftet":"Bekreftet","ikke-nødvendig":"Ikke nødvendig"}[v]}</option>`
+  ).join("");
+  gi("bb").innerHTML=books.map(b=>`<tr data-bid="${b.id}">
+<td><select data-val="${b.type}" onchange="this.dataset.val=this.value;bfld(${b.id},'type',this.value)">${to(b.type)}</select></td>
+<td><input type="text" value="${esc(b.item)}" onchange="bfld(${b.id},'item',this.value)"></td>
+<td><input type="date" value="${b.dato}" style="width:103px" onchange="bfld(${b.id},'dato',this.value)"></td>
+<td><select data-val="${b.status}" onchange="this.dataset.val=this.value;bfld(${b.id},'status',this.value)">${so(b.status)}</select></td>
+<td><input type="text" value="${esc(b.ref)}" placeholder="Ref.nr…" style="width:84px" onchange="bfld(${b.id},'ref',this.value)"></td>
+<td style="text-align:center"><input type="checkbox"${b.ok?" checked":""} onchange="bfld(${b.id},'ok',this.checked)"></td>
+<td><button class="del" onclick="delBook(${b.id})">✕</button></td>
+</tr>`).join("");
+  const ok=books.filter(b=>b.ok).length;
+  const be=books.filter(b=>b.status==="bestilt"||b.status==="bekreftet").length;
+  gi("bstat").textContent=`${ok}/${books.length} bekreftet · ${be} bestilt/bekreftet`;
+}
+function bfld(id,field,val){
+  const b=books.find(x=>x.id===id);if(!b)return;
+  b[field]=val;
+  if(field==='ok'){
+    if(val===true) b.status='bekreftet';
+  } else if(field==='status'){
+    b.ok=(val==='bekreftet');
+  }
+  sv();renderBooks();
+}
+function addBook(){books.push({id:nB++,type:"camping",item:"",dato:"",status:"ikke-bestilt",ref:"",ok:false});sv();renderBooks();}
+function delBook(id){books=books.filter(b=>b.id!==id);sv();renderBooks();}
+
+/* ============================================================
+   FAKTISK KOST PER ETAPPE
+   ============================================================ */
+function setFaktKost(id,val){setKostnad(id,'kostnad',val);}
+function setFaktKostCurr(id,curr){setKostnad(id,'kostnadCurr',curr);}
+
+function setKostnad(id,field,val){
+  const l=legs.find(x=>x.id===id);if(!l)return;
+  if(field==='kostnad'||field==='depositumBetalt'){
+    l[field]=parseFloat(val)||0;
+    // Keep faktKost in sync for upMet compatibility
+    if(field==='kostnad'){l.faktKost=l.kostnad;l.faktKostCurr=l.kostnadCurr||'EUR';}
+  } else {
+    l[field]=val;
+    if(field==='kostnadCurr')l.faktKostCurr=val;
+  }
+  sv();
+  if(field==='betalingType')renderTrip(); // show/hide depositum sub-field
+  else upMet();
+}
+
+function setFerdig(id,checked){
+  const l=legs.find(x=>x.id===id);if(!l)return;
+  l.ferdig=checked;sv();renderTrip();
+}
+
+// NOK already spent for a leg (money that has left the account)
+function legNOKspent(l,s){
+  if(!(l.kostnad>0))return 0;
+  const k=toEUR(l.kostnad,l.kostnadCurr||'EUR',s.r)*s.r;
+  const kd=l.depositumBetalt>0?toEUR(l.depositumBetalt,l.kostnadCurr||'EUR',s.r)*s.r:0;
+  if(l.betalingType==='betalt')return k;           // paid upfront
+  if(l.betalingType==='ved-ankomst')return l.ferdig?k:0;
+  if(l.betalingType==='depositum')return l.ferdig?k:kd;
+  return 0;
+}
+// NOK still to be paid (upcoming)
+function legNOKremaining(l,s){
+  if(!(l.kostnad>0)||l.ferdig)return 0;
+  const k=toEUR(l.kostnad,l.kostnadCurr||'EUR',s.r)*s.r;
+  const kd=l.depositumBetalt>0?toEUR(l.depositumBetalt,l.kostnadCurr||'EUR',s.r)*s.r:0;
+  if(l.betalingType==='betalt')return 0;            // already paid
+  if(l.betalingType==='ved-ankomst')return k;
+  if(l.betalingType==='depositum')return k-kd;
+  return 0;
+}
+
+function daySummaryRow(date,upToIdx,s){
+  const spent=legs.reduce((a,l)=>a+legNOKspent(l,s),0);
+  const remaining=legs.slice(upToIdx+1).reduce((a,l)=>a+legNOKremaining(l,s),0);
+  const d=new Date(date+'T12:00:00');
+  const dn=d.toLocaleDateString('no-NO',{weekday:'long',day:'numeric',month:'long'});
+  return`<tr class="dsum"><td colspan="16">
+    <span style="color:var(--good);font-weight:700">✓ ${dn} fullført</span>
+    <span style="margin:0 10px;color:var(--line)">│</span>
+    Betalt totalt: <b style="color:var(--accent)">${fmt(spent)} kr</b>
+    <span style="margin:0 10px;color:var(--line)">│</span>
+    Est. gjenstående: <b style="color:var(--warn)">${fmt(remaining)} kr</b>
+    <span style="margin:0 10px;color:var(--line)">│</span>
+    Prognose total: <b style="color:var(--text)">${fmt(spent+remaining)} kr</b>
+  </td></tr>`;
+}
+
+/* ============================================================
+   DRIVSTOFF-KVITTERINGER
+   ============================================================ */
+function addDiesel(id){
+  const l=legs.find(x=>x.id===id);if(!l)return;
+  if(!l.diesel)l.diesel=[];
+  l.diesel.push({liter:0,pris:0,curr:'EUR'});
+  sv();renderTrip();
+  // Re-open sights panel
+  const sr=document.getElementById('st'+id);
+  if(sr)sr.style.display='';
+}
+function delDiesel(id,idx){
+  const l=legs.find(x=>x.id===id);if(!l||!l.diesel)return;
+  l.diesel.splice(idx,1);sv();renderTrip();
+  const sr=document.getElementById('st'+id);
+  if(sr)sr.style.display='';
+}
+function setDiesel(id,idx,field,val){
+  const l=legs.find(x=>x.id===id);if(!l||!l.diesel||!l.diesel[idx])return;
+  l.diesel[idx][field]=field==='curr'?val:(parseFloat(val)||0);
+  sv();upMet();
+}
+
+/* ============================================================
+   VIGNETTER PER LAND
+   ============================================================ */
+function setVig(code,field,val){
+  if(!vignettes[code])vignettes[code]={ok:false,pris:0,curr:'EUR'};
+  vignettes[code][field]=val;
+  sv();
+  // Refresh just this border row's style
+  document.querySelectorAll(`tr.brow[data-vigcode="${code}"]`).forEach(tr=>{
+    tr.classList.toggle('ok',!!vignettes[code].ok);
+  });
+  upMet();
+}
+
+/* ============================================================
+   COUNTRY RESTRICTIONS
+   ============================================================ */
+function renderCountries(){
+  gi("cgrid").innerHTML=COUNTRIES.map(c=>{
+    const spd=c.speed;
+    const spdHtml=`<div class="speed-grid">
+      <div class="spd"><div class="sv">${spd[0]}</div><div class="sl">Motorvei</div></div>
+      <div class="spd"><div class="sv">${spd[1]}</div><div class="sl">Riksvei</div></div>
+      <div class="spd"><div class="sv">${spd[spd.length-1]}</div><div class="sl">Tettsted</div></div>
+    </div>`;
+    return`<div class="cc-card">
+  <h3><span>${c.flag}</span>${c.name}</h3>
+  <div class="cc-row"><span class="cc-label">Fart (km/h)</span><span class="cc-val" style="padding:0">${spdHtml}</span></div>
+  <div class="cc-row"><span class="cc-label">Promille</span><span class="cc-val">${c.alcohol}</span></div>
+  <div class="cc-row"><span class="cc-label">Vignett/bom</span><span class="cc-val">${c.vignett}${c.vignett_url?` <a href="${c.vignett_url}" target="_blank">→ kjøp her</a>`:""}</span></div>
+  ${c.vignett_note?`<div class="cc-row"><span class="cc-label"></span><span class="cc-val" style="color:var(--muted);font-size:.72rem">${c.vignett_note}</span></div>`:""}
+  <div class="cc-row"><span class="cc-label">Utstyr</span><span class="cc-val">${c.utstyr.join(", ")}</span></div>
+  <div class="cc-row"><span class="cc-label">Særregler</span><span class="cc-val">${c.special.join(" · ")}</span></div>
+  <div class="cc-good">✅ Klasse B: ${c.klasse_b}</div>
+  ${c.alert?`<div class="cc-alert">${c.alert}</div>`:""}
+</div>`;
+  }).join("");
+}
+
+/* ============================================================
+   ACSI
+   ============================================================ */
+function renderAcsi(){
+  gi("a-b").innerHTML='<div class="acsi-grid">'+
+    ACSI.map(a=>`<div class="ac"><h4>${a.l} ${a.n}</h4><div class="loc">${a.s}</div>
+      <div class="inf">${a.i} <a href="${a.u}" target="_blank">→ nettside</a></div></div>`).join("")+
+  '</div>';
+}
+
+/* ============================================================
+   COLLAPSIBLE
+   ============================================================ */
+function togSec(id,toggle){
+  const el=gi(id);
+  const isOpen=el.style.maxHeight&&el.style.maxHeight!=="0px";
+  if(!isOpen){
+    if(id==="c-b"&&!gi("cgrid").innerHTML.trim()) renderCountries();
+    if(id==="a-b"&&!el.innerHTML.trim()) renderAcsi();
+  }
+  el.style.maxHeight=isOpen?"0":el.scrollHeight+200+"px";
+  toggle.classList.toggle("open",!isOpen);
+}
+
+/* ============================================================
+   EXPORT / IMPORT
+   ============================================================ */
+function exportData(){
+  const a=document.createElement("a");
+  a.href="data:application/json;charset=utf-8,"+encodeURIComponent(JSON.stringify({settings:gs(),legs,books},null,2));
+  a.download="bobiltur2026.json";a.click();
+}
+function importData(){
+  const inp=document.createElement("input");
+  inp.type="file";inp.accept=".json";
+  inp.onchange=e=>{
+    const f=e.target.files[0];if(!f)return;
+    const fr=new FileReader();
+    fr.onload=ev=>{
+      try{
+        const d=JSON.parse(ev.target.result);
+        if(d.legs){legs=d.legs;nL=Math.max(0,...legs.map(l=>l.id))+1;}
+        if(d.books){books=d.books;nB=Math.max(0,...books.map(b=>b.id))+1;}
+        if(d.settings){
+          const s=d.settings;
+          if(s.p!==undefined)gi("ip").value=s.p;if(s.c!==undefined)gi("ic").value=s.c;
+          if(s.f!==undefined)gi("if").value=s.f;if(s.v!==undefined)gi("iv").value=s.v;
+          if(s.ca!==undefined)gi("ica").value=s.ca;if(s.r!==undefined)gi("ir").value=s.r;
+        }
+        sv();renderTrip();renderBooks();alert("Importert!");
+      }catch(err){alert("Ugyldig fil: "+err.message);}
+    };
+    fr.readAsText(f);
+  };
+  inp.click();
+}
+
+/* ============================================================
+   NY REISE
+   ============================================================ */
+function nyReise(){
+  if(!confirm('Gjeldende tur eksporteres automatisk som JSON, deretter starter du en tom ny tur. Fortsette?'))return;
+  exportData();
+  legs=cp(TEMPLATE_LEGS);
+  books=cp(TEMPLATE_BOOKS);
+  nL=Math.max(0,...legs.map(l=>l.id))+1;
+  nB=Math.max(0,...books.map(b=>b.id))+1;
+  // Nullstill faktisk-felt
+  gi('iff').value='';gi('ifca').value='';
+  sv();renderTrip();renderBooks();
+}
+
+/* ============================================================
+   TURFORSKEREN
+   ============================================================ */
+
+let resCoords = null;
+let resItems  = [];
+let resCurCat = 'hike';
+
+const WMO = {
+  0:'☀️',1:'🌤️',2:'⛅',3:'🌥️',
+  45:'🌫️',48:'🌫️',
+  51:'🌦️',53:'🌦️',55:'🌦️',
+  61:'🌧️',63:'🌧️',65:'🌧️',
+  71:'❄️',73:'❄️',75:'❄️',77:'❄️',
+  80:'🌦️',81:'🌦️',82:'⛈️',
+  85:'🌨️',86:'🌨️',
+  95:'⛈️',96:'⛈️',99:'⛈️'
+};
+
+function wmoIcon(c){return WMO[c]||'🌡️';}
+function dist2str(m){return m<1000?Math.round(m)+' m':(m/1000).toFixed(1)+' km';}
+
+async function resSearch(){
+  const q=(gi('res-q')?.value||'').trim();
+  const d1=gi('res-d1')?.value||'';
+  const d2=gi('res-d2')?.value||d1;
+  if(!q){gi('res-status').textContent='⚠ Fyll inn stedsnavn';return;}
+  gi('res-status').textContent='… geocoder stedet';
+  gi('res-results').innerHTML='';
+  gi('res-weather').style.display='none';
+  gi('res-hint').style.display='none';
+  const coords=await geocodePlace(q);
+  if(!coords){
+    gi('res-status').textContent=`⚠ Fant ikke «${q}». Prøv med land: "Pula, Kroatia"`;
+    return;
+  }
+  resCoords={...coords,name:q};
+  gi('res-status').textContent=`📍 ${q} (${coords.lat.toFixed(4)}, ${coords.lon.toFixed(4)})`;
+  if(d1)await resWeather(coords.lat,coords.lon,d1,d2||d1);
+  await resCatSearch(resCurCat);
+}
+
+async function resCat(cat){
+  resCurCat=cat;
+  ['hike','beach','food','rainy'].forEach(c=>{
+    const b=gi('rcat-'+c);if(b)b.className=c===cat?'bo':'';
+  });
+  if(resCoords)await resCatSearch(cat);
+}
+
+async function resCatSearch(cat){
+  if(!resCoords)return;
+  const{lat,lon}=resCoords;
+  const lbl={hike:'turruter',beach:'strender',food:'restauranter',rainy:'innendørs aktiviteter'};
+  gi('res-results').innerHTML='<div style="color:var(--muted);font-size:.8rem">… søker i OpenStreetMap</div>';
+  gi('res-status').textContent='… henter '+lbl[cat];
+  // AllTrails-bar: settes uavhengig av Overpass (koordinater fra geocoding er nok)
+  gi('res-alltrails').style.display='none';
+  if(cat==='hike'){
+    const atLink=gi('res-at-link');
+    if(atLink)atLink.href=`https://www.alltrails.com/explore?lat=${lat}&lng=${lon}&zoom=11`;
+    gi('res-alltrails').style.display='';
+  }
+  try{
+    if(cat==='hike')       resItems=await resHike(lat,lon);
+    else if(cat==='beach') resItems=await resBeach(lat,lon);
+    else if(cat==='food')  resItems=await resFood(lat,lon);
+    else                   resItems=await resRainy(lat,lon);
+
+    if(!resItems.length){
+      const gq=encodeURIComponent(resCoords.name+' '+{hike:'hiking trails',beach:'beaches',food:'local restaurants',rainy:'museums jazz concerts'}[cat]);
+      gi('res-results').innerHTML=`<div style="color:var(--muted);font-size:.8rem;padding:6px 0">
+        Ingen resultater i OSM for dette stedet.<br>
+        <a href="https://www.google.com/search?q=${gq}" target="_blank" class="res-link" style="margin-top:6px;display:inline-flex">🔍 Søk på Google</a>
+        ${cat==='hike'?`<a href="https://www.alltrails.com/explore?lat=${lat}&lng=${lon}&zoom=11" target="_blank" class="res-link" style="margin-top:6px;display:inline-flex">🥾 AllTrails</a>`:''}
+      </div>`;
+      gi('res-status').textContent='Ingen OSM-resultater';
+      return;
+    }
+    gi('res-results').innerHTML=resItems.map((item,i)=>renderResCard(item,i)).join('');
+    gi('res-status').textContent=`${resItems.length} steder funnet`;
+  }catch(e){
+    gi('res-results').innerHTML=`<div style="color:var(--bad);font-size:.8rem">⚠ Overpass-feil: ${esc(e.message)}</div>`;
+    gi('res-status').textContent='⚠ Feil ved henting';
+  }
+}
+
+async function resOverpass(q){
+  const r=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',headers:{'Content-Type':'text/plain'},body:q});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  return r.json();
+}
+
+function resMap(e,lat,lon){
+  const clat=e.lat??e.center?.lat??lat;
+  const clon=e.lon??e.center?.lon??lon;
+  const d=Math.sqrt((clat-lat)**2+(clon-lon)**2)*111000;
+  return{clat,clon,d};
+}
+
+async function resHike(lat,lon){
+  const q=`[out:json][timeout:30];
+(
+  relation["route"~"hiking|foot"]["name"](around:50000,${lat},${lon});
+  way["highway"="path"]["name"]["sac_scale"](around:30000,${lat},${lon});
+  way["highway"="path"]["name"]["trail_visibility"~"excellent|good"](around:20000,${lat},${lon});
+  node["tourism"="viewpoint"]["name"](around:20000,${lat},${lon});
+  node["natural"="peak"]["name"]["ele"](around:40000,${lat},${lon});
+  way["natural"="peak"]["name"](around:40000,${lat},${lon});
+);
+out center 30;`;
+  const data=await resOverpass(q);
+  const seen=new Set();
+  return(data.elements||[])
+    .filter(e=>{const n=e.tags?.name;return n&&!seen.has(n)&&seen.add(n);})
+    .map(e=>{
+      const t=e.tags;
+      const{d}=resMap(e,lat,lon);
+      const type=t.route||t.highway||t.tourism||t.natural;
+      const icon=type==='peak'?'⛰️':type==='viewpoint'?'🔭':'🥾';
+      const meta=[
+        t.distance?`📏 ${t.distance} km`:'',
+        t.duration?`⏱ ${t.duration}`:'',
+        t.ele?`⛰ ${t.ele} moh`:'',
+        t.sac_scale?t.sac_scale.replace(/_/g,' '):'',
+        `📍 ${dist2str(d)} fra sentrum`,
+      ].filter(Boolean).join(' · ');
+      const desc=t.description||t['description:en']||t['description:no']||'';
+      const wiki=t.wikipedia?`https://${t.wikipedia.split(':')[0]}.wikipedia.org/wiki/${encodeURIComponent(t.wikipedia.split(':').slice(1).join(':'))}`:'';
+      const gm=`https://www.google.com/maps/search/${encodeURIComponent(t.name+' '+resCoords.name)}`;
+      return{icon,name:t.name,meta,desc,d,wiki,gm,isHike:true};
+    })
+    .sort((a,b)=>a.d-b.d).slice(0,12);
+}
+
+async function resBeach(lat,lon){
+  const q=`[out:json][timeout:25];
+(
+  way["natural"="beach"]["name"](around:60000,${lat},${lon});
+  node["natural"="beach"]["name"](around:60000,${lat},${lon});
+  way["leisure"="beach_resort"]["name"](around:50000,${lat},${lon});
+  node["leisure"="beach_resort"]["name"](around:50000,${lat},${lon});
+  node["amenity"="swimming_area"]["name"](around:30000,${lat},${lon});
+  way["amenity"="swimming_area"]["name"](around:30000,${lat},${lon});
+);
+out center 20;`;
+  const data=await resOverpass(q);
+  const seen=new Set();
+  return(data.elements||[])
+    .filter(e=>{const n=e.tags?.name;return n&&!seen.has(n)&&seen.add(n);})
+    .map(e=>{
+      const t=e.tags;
+      const{d}=resMap(e,lat,lon);
+      const icon=t.amenity==='swimming_area'?'🏊':'🏖️';
+      const meta=[
+        t.surface?`Underlag: ${t.surface}`:'',
+        t.access&&t.access!=='yes'?`Adgang: ${t.access}`:'',
+        `📍 ${dist2str(d)} fra sentrum`,
+      ].filter(Boolean).join(' · ');
+      const gm=`https://www.google.com/maps/search/${encodeURIComponent(t.name+' strand '+resCoords.name)}`;
+      return{icon,name:t.name,meta,desc:t.description||'',d,wiki:'',gm};
+    })
+    .sort((a,b)=>a.d-b.d).slice(0,10);
+}
+
+async function resFood(lat,lon){
+  const LOCAL=['local','regional','traditional','croatian','czech','hungarian',
+    'slovenian','austrian','german','polish','slovak','balkan','mediterranean','seafood'];
+  const q=`[out:json][timeout:20];
+(
+  node["amenity"="restaurant"]["name"](around:4000,${lat},${lon});
+  node["amenity"="cafe"]["name"](around:2500,${lat},${lon});
+  node["amenity"="biergarten"]["name"](around:4000,${lat},${lon});
+  node["amenity"="pub"]["name"]["cuisine"](around:3000,${lat},${lon});
+);
+out 30;`;
+  const data=await resOverpass(q);
+  const seen=new Set();
+  return(data.elements||[])
+    .filter(e=>{const n=e.tags?.name;return n&&!seen.has(n)&&seen.add(n);})
+    .map(e=>{
+      const t=e.tags;
+      const d=Math.sqrt((e.lat-lat)**2+(e.lon-lon)**2)*111000;
+      const icon=t.amenity==='cafe'?'☕':t.amenity==='biergarten'?'🍺':'🍽️';
+      const cuisine=t.cuisine||'';
+      const isLocal=LOCAL.some(c=>cuisine.toLowerCase().includes(c));
+      const meta=[
+        cuisine?`🍴 ${cuisine}`:'',
+        t.outdoor_seating==='yes'?'🌿 Ute':'',
+        `📍 ${dist2str(d)}`,
+      ].filter(Boolean).join(' · ');
+      const gm=`https://www.google.com/maps/search/${encodeURIComponent(t.name+' '+resCoords.name)}`;
+      return{icon,name:t.name,meta,desc:t.description||'',d,wiki:'',gm,isLocal};
+    })
+    .sort((a,b)=>(a.isLocal===b.isLocal?0:a.isLocal?-1:1)||a.d-b.d)
+    .slice(0,14);
+}
+
+async function resRainy(lat,lon){
+  const ICONS={theatre:'🎭',cinema:'🎬',arts_centre:'🎨',gallery:'🖼️',
+    museum:'🏛️',music_venue:'🎵',library:'📚',spa:'♨️',swimming_pool:'🏊'};
+  const q=`[out:json][timeout:20];
+(
+  node["amenity"="theatre"]["name"](around:12000,${lat},${lon});
+  node["amenity"="cinema"]["name"](around:10000,${lat},${lon});
+  node["amenity"="arts_centre"]["name"](around:10000,${lat},${lon});
+  node["tourism"="gallery"]["name"](around:10000,${lat},${lon});
+  node["tourism"="museum"]["name"](around:12000,${lat},${lon});
+  node["amenity"="music_venue"]["name"](around:10000,${lat},${lon});
+  node["amenity"="library"]["name"](around:8000,${lat},${lon});
+  node["leisure"="spa"]["name"](around:8000,${lat},${lon});
+  node["amenity"="swimming_pool"]["name"]["access"!="private"](around:8000,${lat},${lon});
+);
+out 25;`;
+  const data=await resOverpass(q);
+  const seen=new Set();
+  return(data.elements||[])
+    .filter(e=>{const n=e.tags?.name;return n&&!seen.has(n)&&seen.add(n);})
+    .map(e=>{
+      const t=e.tags;
+      const d=Math.sqrt((e.lat-lat)**2+(e.lon-lon)**2)*111000;
+      const type=t.amenity||t.tourism||t.leisure;
+      const icon=ICONS[type]||'🏛️';
+      const meta=[
+        t.opening_hours?t.opening_hours.substring(0,30):'',
+        `📍 ${dist2str(d)}`,
+      ].filter(Boolean).join(' · ');
+      const wiki=t.wikipedia?`https://${t.wikipedia.split(':')[0]}.wikipedia.org/wiki/${encodeURIComponent(t.wikipedia.split(':').slice(1).join(':'))}`:'';
+      const gm=`https://www.google.com/maps/search/${encodeURIComponent(t.name+' '+resCoords.name)}`;
+      return{icon,name:t.name,meta,desc:t.description||t['description:en']||'',d,wiki,gm};
+    })
+    .sort((a,b)=>a.d-b.d).slice(0,12);
+}
+
+function renderWday(displayDate,daily,i,hist){
+  const d=new Date(displayDate+'T12:00:00');
+  const dn=d.toLocaleDateString('no-NO',{weekday:'short',day:'numeric',month:'short'});
+  const tmax=Math.round(daily.temperature_2m_max[i]);
+  const tmin=Math.round(daily.temperature_2m_min[i]);
+  const rain=daily.precipitation_sum[i].toFixed(1);
+  return`<div class="wday${hist?' hist':''}">
+    <div class="wday-date">${dn}</div>
+    <div class="wday-icon">${wmoIcon(daily.weathercode[i])}</div>
+    <div class="wday-temp">${tmax}°/<span style="color:var(--muted)">${tmin}°</span></div>
+    <div class="wday-rain">${rain} mm</div>
+  </div>`;
+}
+
+function showWeatherBlock(name,days,note,hist){
+  const lc=hist?'var(--warn)':'var(--accent2)';
+  gi('res-weather').innerHTML=`<div style="border-left:3px solid ${lc};padding-left:10px">
+    <div style="font-size:.66rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:5px">Vær – ${esc(name)}</div>
+    <div class="wstrip">${days}</div>
+    <div style="font-size:.63rem;color:${lc};margin-top:3px">${note}</div>
+  </div>`;
+  gi('res-weather').style.display='';
+}
+
+async function resWeather(lat,lon,d1,d2){
+  const d2s=d2||d1;
+  gi('res-weather').style.display='none';
+  // 1. Prøv prognose (maks 16 dager frem)
+  try{
+    const res=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum&start_date=${d1}&end_date=${d2s}&timezone=auto`);
+    const data=await res.json();
+    const daily=data.daily;
+    if(daily?.time?.length){
+      const days=daily.time.map((date,i)=>renderWday(date,daily,i,false)).join('');
+      const note=daily.time.length<3?'⚠ Ufullstendig – resten er for langt frem':'📅 Prognose · pålitelig ~7 dager frem';
+      showWeatherBlock(resCoords.name,days,note,false);
+      return;
+    }
+  }catch(e){console.warn('Prognose-feil:',e);}
+  // 2. Fallback: historisk arkiv – tilsvarende periode i fjor
+  gi('res-weather').innerHTML=`<div style="font-size:.74rem;color:var(--muted)">Værmelding ikke tilgjengelig – henter klimasnitt…</div>`;
+  gi('res-weather').style.display='';
+  try{
+    const shiftY=(s,dy)=>{const d=new Date(s+'T12:00:00');d.setFullYear(d.getFullYear()+dy);return d.toISOString().split('T')[0];};
+    const pd1=shiftY(d1,-1),pd2=shiftY(d2s,-1);
+    const ares=await fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum&start_date=${pd1}&end_date=${pd2}&timezone=auto`);
+    const adata=await ares.json();
+    const adaily=adata.daily;
+    if(adaily?.time?.length){
+      // Vis datoene fra 2026-planen men data fra 2025
+      const days=adaily.time.map((_,i)=>{
+        const orig=new Date(d1+'T12:00:00');orig.setDate(orig.getDate()+i);
+        return renderWday(orig.toISOString().split('T')[0],adaily,i,true);
+      }).join('');
+      showWeatherBlock(resCoords.name,days,`🌡 Værmelding ikke tilgjengelig · Klimasnitt tilsvarende periode 2025`,true);
+    }else{
+      gi('res-weather').innerHTML=`<div style="font-size:.74rem;color:var(--muted)">Værmelding ikke tilgjengelig for disse datoene.</div>`;
+    }
+  }catch(e){
+    gi('res-weather').innerHTML=`<div style="font-size:.74rem;color:var(--muted)">Værmelding ikke tilgjengelig.</div>`;
+    console.warn('Historisk vær-feil:',e);
+  }
+}
+
+function renderResCard(item,idx){
+  const wikiBtn=item.wiki?`<a href="${item.wiki}" target="_blank" class="res-link">📖 Wiki</a>`:'';
+  const atBtn=item.isHike?`<a href="https://www.alltrails.com/explore?q=${encodeURIComponent(item.name)}" target="_blank" class="res-link" style="color:var(--accent)">🥾 AllTrails</a>`:'';
+  return`<div class="res-card">
+  <div class="res-card-head">
+    <b>${item.icon} ${esc(item.name)}</b>
+    <a href="${item.gm}" target="_blank" class="res-link" style="flex-shrink:0;white-space:nowrap">🗺 Maps</a>
+  </div>
+  ${item.meta?`<div class="res-card-meta">${esc(item.meta)}</div>`:''}
+  ${item.desc?`<div class="res-card-desc">${esc(item.desc.substring(0,150))}${item.desc.length>150?'…':''}</div>`:''}
+  <div class="res-card-foot">
+    ${wikiBtn}${atBtn}
+    <button class="bp" onclick="resAddLeg(${idx})" style="font-size:.72rem;padding:3px 10px;margin-left:auto">+ Legg til etappe</button>
+  </div>
+</div>`;
+}
+
+function resAddLeg(idx){
+  const item=resItems[idx];if(!item)return;
+  gi('res-add-name').textContent=item.name;
+  gi('res-add-date').value=gi('res-d1')?.value||'';
+  gi('res-add-bar').style.display='';
+  gi('res-add-bar').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function resConfirmAdd(){
+  const name=gi('res-add-name')?.textContent||'';if(!name)return;
+  const date=gi('res-add-date')?.value||'';
+  const type=gi('res-add-type')?.value||'kjøre';
+  const note=gi('res-add-note')?.value||'';
+
+  // Find chronological insertion point by date
+  let insertIdx=legs.length;
+  if(date){
+    for(let i=0;i<legs.length;i++){
+      if(legs[i].dato&&legs[i].dato>date){insertIdx=i;break;}
+    }
+  }
+  const prevLeg=insertIdx>0?legs[insertIdx-1]:null;
+
+  const newLeg={id:nL++,dato:date,
+    fra:prevLeg?(prevLeg.til||''):'',
+    til:name,overnatting:'',type,km:0,avg:'09:00',ank:'',
+    status:'ikke-bestilt',note,mapUrl:'',sights:[],tips:[],
+    ferdig:false,kostnad:0,kostnadCurr:'EUR',
+    betalingType:type==='ferge'?'betalt':type==='opphold'?'ved-ankomst':'betalt',
+    depositumBetalt:0};
+
+  legs.splice(insertIdx,0,newLeg);
+  sv();renderTrip();
+  gi('res-add-bar').style.display='none';
+  gi('res-add-note').value='';
+  setTimeout(()=>document.querySelector(`tr[data-id="${newLeg.id}"]`)?.scrollIntoView({behavior:'smooth'}),200);
+  if(newLeg.fra)fetchKm(newLeg.id);
+}
+
+/* ============================================================
+   ONLINE / OFFLINE
+   ============================================================ */
+function updNet(){
+  const online=navigator.onLine;
+  const dot=gi('net-dot'),lbl=gi('net-lbl');
+  if(dot)dot.classList.toggle('offline',!online);
+  if(lbl)lbl.textContent=online?'Online':'Offline';
+  if(online)autoSync();
+}
+function autoSync(){
+  if(!navigator.onLine)return;
+  legs.forEach(l=>{
+    if(l.fra&&l.til&&!l.km&&l.type!=='ferge'&&l.type!=='opphold') fetchKm(l.id);
+  });
+}
+window.addEventListener('online',updNet);
+window.addEventListener('offline',updNet);
+
+/* ============================================================
+   INIT
+   ============================================================ */
+loadState();loadSet();renderTrip();renderBooks();
+(function(){const k=localStorage.getItem('gmkey');if(k){const el=gi('igm');if(el)el.value=k;loadPlacesApi(k);}})();
+updNet();
+</script>
+</body>
+</html>
