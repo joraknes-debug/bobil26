@@ -950,7 +950,7 @@ function renderTrip(){
       ?`<td style="padding:2px 4px">
           <div style="display:flex;align-items:center;gap:2px">
             <input type="number" value="${l.kostnad||''}" placeholder="0" class="si"
-              style="width:55px;text-align:right;font-size:.78rem" oninput="setKostnad(${l.id},'kostnad',this.value)" title="Kostnad">
+              style="width:72px;text-align:right;font-size:.78rem" oninput="setKostnad(${l.id},'kostnad',this.value)" title="Kostnad">
             <select class="ss" style="font-size:.63rem;padding:1px 2px" onchange="setKostnad(${l.id},'kostnadCurr',this.value)">
               ${cOpts(l.kostnadCurr||'EUR')}
             </select>
@@ -960,7 +960,7 @@ function renderTrip(){
             <option value="ved-ankomst"${l.betalingType==='ved-ankomst'?' selected':''}>🏕 Ankomst</option>
             <option value="depositum"${l.betalingType==='depositum'?' selected':''}>⬡ Depositum</option>
           </select>
-          ${hasDeposit?`<div class="kost-dep">Dep:<input type="number" value="${l.depositumBetalt||''}" placeholder="0" class="si" style="width:42px;font-size:.62rem;text-align:right" oninput="setKostnad(${l.id},'depositumBetalt',this.value)"></div>`:''}
+          ${hasDeposit?`<div class="kost-dep">Dep:<input type="number" value="${l.depositumBetalt||''}" placeholder="0" class="si" style="width:60px;font-size:.62rem;text-align:right" oninput="setKostnad(${l.id},'depositumBetalt',this.value)"></div>`:''}
         </td>`
       :`<td class="cc kc">${l.km>0?fE(co):'–'}</td>`;
 
