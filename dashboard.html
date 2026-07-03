@@ -721,9 +721,9 @@ const COUNTRY_MAP=[
   {code:'DE',flag:'🇩🇪',keys:['germany','deutschland','rostock','potsdam','berlin','hamburg','münchen','frankfurt','köln']},
   {code:'PL',flag:'🇵🇱',keys:['poland','polen','warszawa','warsaw','kraków','krakow','wieliczka','gdansk','wrocław','katowice']},
   {code:'CZ',flag:'🇨🇿',keys:['czech','tsjekkia','tjekkia','prague','praha','sedmihorky','bohemsk','brno','pardubice']},
-  {code:'SK',flag:'🇸🇰',keys:['slovakia','bratislava','košice','kosice','žilina']},
-  {code:'HU',flag:'🇭🇺',keys:['hungary','ungarn','budapest','debrecen','pécs','pecs','györ']},
-  {code:'HR',flag:'🇭🇷',keys:['croatia','kroatia','pula','zagreb','split','rovinj','dubrovnik','fažana','fazana','rijeka','istria','zadar']},
+  {code:'SK',flag:'🇸🇰',keys:['slovakia','bratislava','košice','kosice','žilina','sucha bela','sucha','tatry','poprad','liptov','bystrica','prešov','presov','piešťany','piestany','štrbské','strbske','orava','trenčín','trencin','nitra','trnava','martin','ružomberok','ruzomberok']},
+  {code:'HU',flag:'🇭🇺',keys:['hungary','ungarn','budapest','debrecen','pécs','pecs','györ','győr','balaton','eger','sopron','hévíz','heviz']},
+  {code:'HR',flag:'🇭🇷',keys:['croatia','kroatia','pula','zagreb','split','rovinj','dubrovnik','fažana','fazana','rijeka','istria','zadar','plitvicka','plitvička','plitvice','krka','makarska','hvar','trogir','šibenik','sibenik','omiš','omis','brela','korčula','korcula','vis','brac','brač']},
   {code:'SI',flag:'🇸🇮',keys:['slovenia','bled','ljubljana','maribor','kranjska','koper']},
   {code:'AT',flag:'🇦🇹',keys:['austria','østerrike','innsbruck','wien','salzburg','graz','linz']},
 ];
@@ -934,16 +934,7 @@ function renderTrip(){
   let prevCo=detectCountry(legs[0]?.fra);
 
   legs.forEach((l,i)=>{
-    let destCo=detectCountry(l.til);
-    // If til is not recognised, peek ahead to find the next detected country.
-    // This ensures the border-crossing row appears before the FIRST leg entering
-    // the new country, even when the destination name is not in COUNTRY_MAP keys.
-    if(!destCo&&l.til){
-      for(let j=i+1;j<legs.length;j++){
-        const nc=detectCountry(legs[j].til);
-        if(nc){if(nc!==prevCo)destCo=nc;break;}
-      }
-    }
+    const destCo=detectCountry(l.til);
     if(destCo&&destCo!==prevCo){rows.push(vigRow(destCo));prevCo=destCo;}
 
     const fl=lFl(l,s.c),co=lCo(l,s.c,s.p);
