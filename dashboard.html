@@ -194,22 +194,6 @@ tr.dsum>td{background:rgba(34,193,164,.07);border-top:2px solid rgba(34,193,164,
 .at-bar a{font-size:.8rem;font-weight:600;color:var(--accent);text-decoration:none}
 .at-bar a:hover{color:var(--text)}
 .at-bar span{font-size:.7rem;color:var(--muted)}
-/* AI CHAT */
-.ai-wrap{margin-top:14px;border-top:1px solid rgba(255,255,255,.06);padding-top:12px}
-.ai-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
-.ai-chat{display:flex;flex-direction:column;background:var(--card2);border:1px solid var(--line);border-radius:8px;overflow:hidden}
-.ai-msgs{overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;min-height:100px;max-height:380px}
-.ai-msg{max-width:90%;border-radius:10px;padding:7px 11px;font-size:.81rem;line-height:1.55;white-space:pre-wrap;word-wrap:break-word}
-.ai-msg.u{align-self:flex-end;background:var(--accent2);color:#fff}
-.ai-msg.a{align-self:flex-start;background:var(--card);border:1px solid var(--line)}
-.ai-msg.err{align-self:flex-start;background:rgba(220,60,60,.1);border:1px solid rgba(220,60,60,.25);color:var(--bad)}
-.ai-msg.thinking{color:var(--muted);font-style:italic;font-size:.74rem;border:none!important;background:transparent!important}
-.ai-chips{display:flex;flex-wrap:wrap;gap:4px;padding:6px 10px;border-top:1px solid var(--line);background:rgba(0,0,0,.12)}
-.ai-chip{font-size:.7rem;padding:3px 9px;border-radius:12px;border:1px solid var(--line);background:transparent;cursor:pointer;color:var(--muted);transition:.15s;font-family:inherit}
-.ai-chip:hover{border-color:var(--accent);color:var(--accent)}
-.ai-irow{display:flex;gap:6px;padding:7px 9px;border-top:1px solid var(--line);background:var(--bg)}
-.ai-irow input{flex:1;background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:5px;padding:5px 9px;font-size:.82rem;font-family:inherit}
-.ai-irow input:focus{outline:none;border-color:var(--accent)}
 </style>
 </head>
 <body>
@@ -267,16 +251,6 @@ tr.dsum>td{background:rgba(34,193,164,.07);border-top:2px solid rgba(34,193,164,
       <div style="font-size:.67rem;color:var(--muted);margin-top:3px;line-height:1.5">
         Uten nøkkel: OpenStreetMap-data. Med nøkkel: Google Places API – mye bedre kvalitet. Aktiver <b>Places API</b> og <b>Geocoding API</b> på
         <a href="https://console.cloud.google.com/apis/library" target="_blank">Google Cloud Console</a>. Koster ~$0 for 20 destinasjoner.
-      </div>
-    </div>
-    <div class="field" style="margin-top:8px">
-      <label>Anthropic API-nøkkel <span style="color:var(--muted);font-weight:400;text-transform:none">– for AI-planleggingsassistenten i Turforskeren</span></label>
-      <div style="display:flex;gap:8px;align-items:center;margin-top:2px">
-        <input id="iant" type="password" placeholder="sk-ant-… (hent på console.anthropic.com)" style="flex:1;font-family:monospace;font-size:.8rem;background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:5px;padding:5px 7px" onchange="setAiKey(this.value)" autocomplete="off">
-        <span id="ant-st" style="font-size:.73rem;color:var(--muted);white-space:nowrap">Ikke satt</span>
-      </div>
-      <div style="font-size:.67rem;color:var(--muted);margin-top:3px;line-height:1.5">
-        Nøkkelen lagres kun lokalt i nettleseren. Bruk <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a> for å opprette nøkkel. Koster ~$0.002 per samtale med Haiku-modellen.
       </div>
     </div>
   </div>
@@ -465,32 +439,6 @@ tr.dsum>td{background:rgba(34,193,164,.07);border-top:2px solid rgba(34,193,164,
     </div>
   </div>
 
-  <!-- AI PLANLEGGINGSASSISTENT -->
-  <div class="ai-wrap">
-    <div class="ai-head">
-      <span style="font-size:.82rem;font-weight:700;color:var(--accent)">💬 Planleggingsassistent</span>
-      <div style="display:flex;gap:6px;align-items:center">
-        <span id="ai-st" style="font-size:.68rem;color:var(--muted)"></span>
-        <button class="ib" onclick="aiClear()" title="Ryd samtale" style="font-size:.68rem">🗑 Ryd</button>
-      </div>
-    </div>
-    <div class="ai-chat">
-      <div class="ai-msgs" id="ai-msgs">
-        <div class="ai-msg a">Hei! Jeg kjenner ruten og preferansene dine. Still meg spørsmål som: «Hva ligger mellom Sedmihorky og Pula på tre dager?», «Foreslå noe avsidesliggende ved kysten», eller «Hvilke campingplasser er det langs E65 i Kroatia?»</div>
-      </div>
-      <div class="ai-chips">
-        <button class="ai-chip" onclick="aiSuggest('Hva finnes langs ruten mellom Tsjekkia og Kroatia som passer for oss – natur, vandring og autentiske steder?')">Langs CZ→HR-ruten?</button>
-        <button class="ai-chip" onclick="aiSuggest('Vi har tre dager fra Pula tilbake til Oslo. Hvilke stopp anbefaler du?')">Hjemruten 3 dager</button>
-        <button class="ai-chip" onclick="aiSuggest('Foreslå ett sted vi bør stoppe i Slovakia som få turister besøker')">Skjult perle i Slovakia</button>
-        <button class="ai-chip" onclick="aiSuggest('Hvilke avsidesliggende strender finnes nær Pula eller langs Istriakysten?')">Strender Istria</button>
-      </div>
-      <div class="ai-irow">
-        <input id="ai-inp" type="text" placeholder="Spør om ruten, strekninger, steder, aktiviteter…"
-          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();aiSend()}">
-        <button class="bp" id="ai-btn" onclick="aiSend()" style="padding:5px 13px;white-space:nowrap;font-size:.8rem">↑ Send</button>
-      </div>
-    </div>
-  </div>
 </div>
 
 <!-- LANDSINFORMASJON -->
@@ -2078,127 +2026,10 @@ window.addEventListener('online',updNet);
 window.addEventListener('offline',updNet);
 
 /* ============================================================
-   AI PLANLEGGINGSASSISTENT
-   ============================================================ */
-let aiHistory=[];
-
-function setAiKey(val){
-  val=val.trim();
-  if(val)localStorage.setItem('anthrKey',val);else localStorage.removeItem('anthrKey');
-  const st=gi('ant-st');
-  if(st){st.textContent=val?'✓ Satt':'Ikke satt';st.style.color=val?'var(--good)':'var(--muted)';}
-}
-
-function buildTripCtx(){
-  const legLines=legs.filter(l=>l.fra||l.til).map(l=>{
-    const parts=[l.dato||'?',l.fra||'?','→',l.til||'?','('+l.type+(l.km?', '+l.km+' km':'')+')'];
-    return parts.join(' ');
-  }).join('\n');
-  return `Du er en personlig reiseassistent for en norsk familie på bobil-tur gjennom Europa sommeren 2026.
-
-NÅVÆRENDE REISEPLAN:
-${legLines||'(ingen etapper lagt inn)'}
-
-REISESTIL OG PREFERANSER:
-- Vandring: 3–5 timer, middels krevende
-- Foretrekker steder off-beaten-path og autentiske landsbyer
-- Avsidesliggende strender fremfor turiststrender
-- Lokal mat, ikke for dyr
-- Gallerier og jazz på regndager
-- Bobil-vennlige overnattingssteder (ACSI, campingplasser med plass til bobil)
-
-OM KJØRETØYET:
-- Bobil under 3500 kg, norsk registrert, klasse B-sertifikat
-- Egnet for grusveier og sideveier
-- Trenger campingplass eller bobil-parkering
-
-Svar alltid på norsk. Vær konkret og praktisk – navngi steder med norsk/lokal skrivemåte som er søkbare i kart.
-Bruk emoji-ikoner: 🥾 vandring · 🏖 strand · 🍽 mat · 🏕 camping · 🏛 kultur · 🌲 natur · ⚠️ advarsel.
-Når du foreslår steder å legge til i reiseplanen, nevn det eksplisitt.`;
-}
-
-function aiAppend(role,text){
-  const box=gi('ai-msgs'); if(!box) return null;
-  const d=document.createElement('div');
-  d.className='ai-msg '+({user:'u',assistant:'a',error:'err',thinking:'a thinking'}[role]||'a');
-  d.textContent=text;
-  box.appendChild(d);
-  box.scrollTop=box.scrollHeight;
-  return d;
-}
-
-function aiSuggest(text){
-  const inp=gi('ai-inp'); if(inp){inp.value=text;inp.focus();}
-}
-
-function aiClear(){
-  aiHistory=[];
-  const box=gi('ai-msgs'); if(!box) return;
-  box.innerHTML='<div class="ai-msg a">Hei! Jeg kjenner ruten og preferansene dine. Still meg spørsmål som: «Hva ligger mellom Sedmihorky og Pula på tre dager?», «Foreslå noe avsidesliggende ved kysten», eller «Hvilke campingplasser er det langs E65 i Kroatia?»</div>';
-}
-
-async function aiSend(){
-  const inp=gi('ai-inp');
-  const msg=(inp?.value||'').trim(); if(!msg) return;
-  inp.value='';
-
-  const key=localStorage.getItem('anthrKey');
-  if(!key){
-    aiAppend('error','⚠ Legg inn Anthropic API-nøkkel i Innstillinger for å bruke assistenten.');
-    return;
-  }
-
-  aiAppend('user',msg);
-  aiHistory.push({role:'user',content:msg});
-
-  const btn=gi('ai-btn'); if(btn) btn.disabled=true;
-  const st=gi('ai-st'); if(st) st.textContent='tenker…';
-  const thinking=aiAppend('thinking','…');
-
-  try{
-    const resp=await fetch('/api/chat',{
-      method:'POST',
-      headers:{
-        'content-type':'application/json',
-        'x-ant-key':key
-      },
-      body:JSON.stringify({
-        model:'claude-haiku-4-5-20251001',
-        max_tokens:1500,
-        system:buildTripCtx(),
-        messages:aiHistory
-      })
-    });
-
-    if(!resp.ok){
-      let errMsg=resp.statusText;
-      try{const e=await resp.json();errMsg=e.error?.message||errMsg;}catch(_){}
-      throw new Error('API-feil '+resp.status+': '+errMsg);
-    }
-
-    const data=await resp.json();
-    const answer=(data.content?.[0]?.text||'(tomt svar)').trim();
-    thinking?.remove();
-    aiHistory.push({role:'assistant',content:answer});
-    aiAppend('assistant',answer);
-    if(st) st.textContent='';
-
-  }catch(e){
-    thinking?.remove();
-    aiHistory.pop(); // fjern mislykket brukermelding fra historikk
-    aiAppend('error','⚠ '+e.message);
-    if(st) st.textContent='feil';
-  }finally{
-    if(btn) btn.disabled=false;
-  }
-}
-
-/* ============================================================
    INIT
    ============================================================ */
 loadState();loadSet();renderTrip();renderBooks();
 (function(){const k=localStorage.getItem('gmkey');if(k){const el=gi('igm');if(el)el.value=k;loadPlacesApi(k);}})();
-(function(){const k=localStorage.getItem('anthrKey');if(k){const el=gi('iant');if(el)el.value=k;setAiKey(k);}})();
 updNet();
 </script>
 </body>
