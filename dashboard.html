@@ -194,6 +194,25 @@ tr.dsum>td{background:rgba(34,193,164,.07);border-top:2px solid rgba(34,193,164,
 .at-bar a{font-size:.8rem;font-weight:600;color:var(--accent);text-decoration:none}
 .at-bar a:hover{color:var(--text)}
 .at-bar span{font-size:.7rem;color:var(--muted)}
+
+/* AI TERMINAL */
+.ai-wrap{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+.ai-hd{font-size:.78rem;font-weight:700;color:var(--accent);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.ai-status{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:14px 16px;font-size:.8rem;line-height:1.9;color:var(--muted)}
+.ai-status code{background:var(--bg);padding:1px 5px;border-radius:3px;font-family:monospace;font-size:.82rem;color:var(--accent2)}
+.ai-msgs{height:240px;overflow-y:auto;background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:10px;margin-bottom:8px;display:flex;flex-direction:column;gap:6px}
+.ai-msg{font-size:.78rem;line-height:1.5;padding:6px 9px;border-radius:6px;max-width:90%}
+.ai-msg.u{background:rgba(59,157,255,.12);border:1px solid rgba(59,157,255,.2);align-self:flex-end;color:var(--accent2)}
+.ai-msg.a{background:rgba(34,193,164,.08);border:1px solid rgba(34,193,164,.2);align-self:flex-start;white-space:pre-wrap}
+.ai-msg.err{background:rgba(239,107,107,.1);border:1px solid rgba(239,107,107,.3);color:var(--bad);align-self:flex-start}
+.ai-msg.thinking{color:var(--muted);font-style:italic;align-self:flex-start;background:none;border:none}
+.ai-chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px}
+.ai-chip{background:var(--pill);border:1px solid var(--line);border-radius:999px;padding:2px 8px;font-size:.67rem;color:var(--muted);cursor:pointer}
+.ai-chip:hover{border-color:var(--accent);color:var(--accent)}
+.ai-irow{display:flex;gap:5px}
+.ai-irow textarea{flex:1;background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:5px;padding:5px 7px;font-size:.78rem;resize:none;height:54px;font-family:inherit;line-height:1.45}
+.ai-irow textarea:focus{outline:none;border-color:var(--accent)}
+.ai-irow textarea::placeholder{color:var(--muted)}
 </style>
 </head>
 <body>
@@ -251,6 +270,22 @@ tr.dsum>td{background:rgba(34,193,164,.07);border-top:2px solid rgba(34,193,164,
       <div style="font-size:.67rem;color:var(--muted);margin-top:3px;line-height:1.5">
         Uten nøkkel: OpenStreetMap-data. Med nøkkel: Google Places API – mye bedre kvalitet. Aktiver <b>Places API</b> og <b>Geocoding API</b> på
         <a href="https://console.cloud.google.com/apis/library" target="_blank">Google Cloud Console</a>. Koster ~$0 for 20 destinasjoner.
+      </div>
+    </div>
+    <div class="field" style="margin-top:12px">
+      <label>Anthropic API-nøkkel <span style="color:var(--muted);font-weight:400;text-transform:none">– for AI-planleggingsassistent i Turforskeren</span></label>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:2px">
+        <input id="iant" type="password" placeholder="sk-ant-… (for AI-chat)" style="flex:1;font-family:monospace;font-size:.8rem;background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:5px;padding:5px 7px" onchange="setAiKey(this.value)" autocomplete="off">
+        <span id="ai-key-st" style="font-size:.73rem;color:var(--muted);white-space:nowrap">Ikke satt</span>
+      </div>
+      <div style="font-size:.67rem;color:var(--muted);margin-top:5px;line-height:1.8;background:var(--card2);border:1px solid var(--line);border-radius:6px;padding:8px 11px">
+        <b style="color:var(--text)">Slik får du nøkkelen:</b><br>
+        1. Gå til <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com/settings/keys</a><br>
+        2. Klikk <b style="color:var(--text)">Create Key</b> og gi den et navn<br>
+        3. Kopier nøkkelen (starter med <span style="font-family:monospace;color:var(--accent2)">sk-ant-…</span>)<br>
+        4. Lim den inn her — lagres kun lokalt i din nettleser<br>
+        <span style="color:var(--warn)">⚙ Krever</span> at du kjører <span style="font-family:monospace;color:var(--accent2)">python3 server.py</span> i bobil26-mappen.
+        Koster ca. $0.001–0.003 per samtale.
       </div>
     </div>
   </div>
@@ -436,6 +471,41 @@ tr.dsum>td{background:rgba(34,193,164,.07);border-top:2px solid rgba(34,193,164,
       <input type="text" id="res-add-note" placeholder="Notat…" class="si" style="min-width:120px;flex:1">
       <button class="bp" onclick="resConfirmAdd()" style="font-size:.76rem">✓ Legg til</button>
       <button onclick="gi('res-add-bar').style.display='none'" style="font-size:.76rem;color:var(--muted)">✕</button>
+    </div>
+  </div>
+
+  <!-- AI-planleggingsassistent -->
+  <div class="ai-wrap">
+    <div class="ai-hd">💬 AI-planleggingsassistent
+      <span id="ai-srv-st" style="font-size:.65rem;font-weight:400;color:var(--muted)">sjekker…</span>
+    </div>
+    <div id="ai-offline-box" class="ai-status" style="display:none">
+      <b style="color:var(--text)">AI-assistenten er ikke aktiv.</b><br>
+      Slik starter du den:<br>
+      1. Åpne Terminal og naviger til <span style="font-family:monospace;color:var(--accent2)">bobil26</span>-mappen<br>
+      2. Skriv <span style="font-family:monospace;color:var(--accent2)">python3 server.py</span> og trykk Enter<br>
+      3. La terminalen stå åpen — ikke lukk den<br>
+      4. Legg inn Anthropic API-nøkkel i Innstillinger (rull opp)<br>
+      <button class="bo" onclick="aiInit()" style="margin-top:8px;font-size:.72rem">🔄 Sjekk igjen</button>
+    </div>
+    <div id="ai-box" style="display:none">
+      <div id="ai-nokey-warn" style="display:none;background:rgba(240,163,94,.1);border:1px solid rgba(240,163,94,.3);border-radius:6px;padding:7px 10px;font-size:.75rem;color:var(--warn);margin-bottom:8px">
+        ⚠ Legg inn Anthropic API-nøkkel i Innstillinger (rull opp til Innstillinger).
+      </div>
+      <div class="ai-msgs" id="ai-msgs"></div>
+      <div class="ai-chips">
+        <span class="ai-chip" onclick="aiSuggest('Hva er de beste seværdighetene mellom ')">Seværdigheter mellom steder</span>
+        <span class="ai-chip" onclick="aiSuggest('Foreslå 2–3 campingplasser ved ')">Campingplasser</span>
+        <span class="ai-chip" onclick="aiSuggest('Hva bør vi vite om å kjøre til ')">Reiseinformasjon</span>
+        <span class="ai-chip" onclick="aiSuggest('Planlegg 3 dager fra ')">Planlegg etapper</span>
+      </div>
+      <div class="ai-irow">
+        <textarea id="ai-inp" placeholder="Spør om ruter, seværdigheter, campingplasser… (Enter = send, Shift+Enter = ny linje)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();aiSend()}"></textarea>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <button class="bp" id="ai-btn" onclick="aiSend()" style="height:54px;padding:0 14px">Send</button>
+          <button onclick="aiClear()" style="font-size:.68rem;padding:2px 8px;color:var(--muted)">Tøm</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -839,8 +909,9 @@ function lCo(l,c,p){return lFl(l,c)*p;}
    ============================================================ */
 function upMet(){
   const s=gs();
-  const tkm=legs.reduce((a,l)=>a+(l.km||0),0);
-  const tfl=legs.reduce((a,l)=>a+lFl(l,s.c),0);
+  const dl=legs.filter(l=>l.type!=='ferge'&&l.type!=='opphold');
+  const tkm=dl.reduce((a,l)=>a+(l.km||0),0);
+  const tfl=dl.reduce((a,l)=>a+lFl(l,s.c),0);
   const fco=tfl*s.p;
   const nights=legs.filter(l=>l.overnatting&&l.type!=="ferge"&&
     l.overnatting!=="Hjemme – egen leilighet"&&
@@ -1030,10 +1101,10 @@ ${dieselHtml}
 <td><input type="text" value="${esc(l.til)}" placeholder="Til…" data-field="til" onchange="fld(${l.id},'til',this.value)" oninput="lMap(${l.id},this,'til')"></td>
 <td><input type="text" value="${esc(l.overnatting)}" placeholder="Overnatting…" data-field="overnatting" onchange="fld(${l.id},'overnatting',this.value)"></td>
 <td><select data-val="${l.type}" onchange="this.dataset.val=this.value;fld(${l.id},'type',this.value);trc(${l.id},this.value)">${typeOpts(l.type)}</select></td>
-<td><input type="number" value="${l.km||""}" placeholder="0" style="width:54px" data-field="km" oninput="kmI(${l.id},+this.value)" onchange="sv()"></td>
+${!isCostLeg?`<td><input type="number" value="${l.km||""}" placeholder="0" style="width:54px" data-field="km" oninput="kmI(${l.id},+this.value)" onchange="sv()"></td>`:`<td style="text-align:center;color:var(--muted)">–</td>`}
 <td><input type="text" value="${esc(l.avg)}" placeholder="09:00" style="width:48px" onchange="fld(${l.id},'avg',this.value)"></td>
 <td><input type="text" value="${esc(l.ank)}" placeholder="12:00" style="width:48px" data-field="ank" onchange="fld(${l.id},'ank',this.value)"></td>
-<td class="cc fc">${l.km>0?fL(fl):"–"}</td>
+<td class="cc fc">${!isCostLeg&&l.km>0?fL(fl):"–"}</td>
 ${kostCell}
 <td><select data-val="${l.status}" onchange="this.dataset.val=this.value;fld(${l.id},'status',this.value)">${statOpts(l.status)}</select></td>
 <td style="text-align:center"><a class="mab${mu?"":" off"}" id="ml${l.id}" href="${mu||"#"}" target="_blank" title="Åpne i Google Maps">🗺</a></td>
@@ -1112,13 +1183,13 @@ function fld(id,field,val){
 }
 function kmI(id,val){
   const l=legs.find(x=>x.id===id); if(!l) return;
+  if(l.type==='ferge'||l.type==='opphold') return;
   l.km=val||0;
   const s=gs(),fl=lFl(l,s.c),co=lCo(l,s.c,s.p);
   const tr=document.querySelector(`tr[data-id="${id}"]`);
   if(tr){
-    tr.querySelector(".fc").textContent=l.km>0?fL(fl):"–";
-    tr.querySelector(".kc").textContent=l.km>0?fE(co):"–";
-    // Fjern "utdatert"-markering når km oppdateres
+    const fc=tr.querySelector(".fc"); if(fc) fc.textContent=l.km>0?fL(fl):"–";
+    const kc=tr.querySelector(".kc"); if(kc) kc.textContent=l.km>0?fE(co):"–";
     const ki=tr.querySelector('[data-field="km"]');
     if(ki){ki.classList.remove('km-stale');ki.title="";}
     const ma=document.getElementById("ml"+id);
@@ -1170,8 +1241,9 @@ function onSet(){
   const s=gs();
   document.querySelectorAll("tr[data-id]").forEach(tr=>{
     const l=legs.find(x=>x.id===+tr.dataset.id); if(!l) return;
-    tr.querySelector(".fc").textContent=l.km>0?fL(lFl(l,s.c)):"–";
-    tr.querySelector(".kc").textContent=l.km>0?fE(lCo(l,s.c,s.p)):"–";
+    if(l.type==='ferge'||l.type==='opphold'){setAnk(l.id);return;}
+    const fc=tr.querySelector(".fc"); if(fc) fc.textContent=l.km>0?fL(lFl(l,s.c)):"–";
+    const kc=tr.querySelector(".kc"); if(kc) kc.textContent=l.km>0?fE(lCo(l,s.c,s.p)):"–";
     setAnk(l.id);
   });
   upMet();
@@ -2007,6 +2079,126 @@ function resConfirmAdd(){
 }
 
 /* ============================================================
+   AI-PLANLEGGINGSASSISTENT
+   ============================================================ */
+let _aiKey='';
+let _aiHistory=[];
+
+function setAiKey(val){
+  _aiKey=(val||'').trim();
+  localStorage.setItem('anthrKey',_aiKey);
+  const st=gi('ai-key-st');
+  if(st) st.textContent=_aiKey?'Nøkkel satt ✓':'Ikke satt';
+  const warn=gi('ai-nokey-warn');
+  const box=gi('ai-box');
+  if(warn&&box&&box.style.display!=='none')
+    warn.style.display=_aiKey?'none':'';
+}
+
+async function aiProbe(){
+  try{
+    await fetch('/api/chat',{method:'OPTIONS',signal:AbortSignal.timeout(2500)});
+    return true;
+  }catch(_){return false;}
+}
+
+async function aiInit(){
+  const srv=gi('ai-srv-st');
+  if(srv){srv.textContent='sjekker…';srv.style.color='var(--muted)';}
+  const ok=await aiProbe();
+  const offBox=gi('ai-offline-box');
+  const aiBox=gi('ai-box');
+  if(srv){srv.textContent=ok?'● aktiv':'● ikke aktiv';srv.style.color=ok?'var(--good)':'var(--bad)';}
+  if(ok){
+    if(offBox) offBox.style.display='none';
+    if(aiBox) aiBox.style.display='';
+    const warn=gi('ai-nokey-warn');
+    if(warn) warn.style.display=_aiKey?'none':'';
+    const msgs=gi('ai-msgs');
+    if(msgs&&!msgs.children.length)
+      aiAppend('a','Hei! Jeg er din reiseassistent. Spør meg om seværdigheter, campingplasser, ruter eller hva du trenger hjelp med på turen.');
+  }else{
+    if(offBox) offBox.style.display='';
+    if(aiBox) aiBox.style.display='none';
+  }
+}
+
+function buildTripCtx(){
+  const s=gs();
+  let ctx='Du er en reiseassistent for en bobiltur gjennom Europa.\n';
+  ctx+=`Bobil: forbruk ${s.c} L/100km, dieselpris ca €${s.p}/L.\n`;
+  if(legs.length){
+    const sample=legs.slice(0,20).map(l=>`${l.dato||'?'}: ${l.fra||'?'} → ${l.til||'?'} (${l.type}${l.km?' '+l.km+'km':''})`).join('\n');
+    ctx+=`Planlagte etapper:\n${sample}\n`;
+    if(legs.length>20) ctx+=`...og ${legs.length-20} til.\n`;
+  }
+  ctx+='Svar på norsk. Vær konkret og kortfattet.';
+  return ctx;
+}
+
+function aiAppend(role,text){
+  const box=gi('ai-msgs'); if(!box) return null;
+  const d=document.createElement('div');
+  d.className='ai-msg '+(role==='u'?'u':role==='err'?'err':role==='thinking'?'thinking':'a');
+  d.textContent=text;
+  box.appendChild(d);
+  box.scrollTop=box.scrollHeight;
+  return d;
+}
+
+function aiSuggest(text){
+  const inp=gi('ai-inp'); if(!inp) return;
+  inp.value=text;
+  inp.focus();
+}
+
+function aiClear(){
+  _aiHistory=[];
+  const box=gi('ai-msgs'); if(!box) return;
+  box.innerHTML='';
+  aiAppend('a','Samtalen er tømt. Hva kan jeg hjelpe deg med?');
+}
+
+async function aiSend(){
+  const inp=gi('ai-inp'); if(!inp) return;
+  const txt=inp.value.trim(); if(!txt) return;
+  if(!_aiKey){aiAppend('err','Legg inn Anthropic API-nøkkel i Innstillinger.');return;}
+  inp.value='';
+  aiAppend('u',txt);
+  _aiHistory.push({role:'user',content:txt});
+  const thinking=aiAppend('thinking','Tenker…');
+  const btn=gi('ai-btn');
+  if(btn){btn.disabled=true;btn.textContent='…';}
+  try{
+    const body={
+      model:'claude-haiku-4-5-20251001',
+      max_tokens:1024,
+      system:buildTripCtx(),
+      messages:_aiHistory.slice(-12)
+    };
+    const r=await fetch('/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-Ant-Key':_aiKey},
+      body:JSON.stringify(body)
+    });
+    const data=await r.json();
+    if(thinking) thinking.remove();
+    if(data.error){
+      aiAppend('err','Feil: '+data.error.message);
+    }else{
+      const reply=data.content?.[0]?.text||'(tomt svar)';
+      _aiHistory.push({role:'assistant',content:reply});
+      aiAppend('a',reply);
+    }
+  }catch(e){
+    if(thinking) thinking.remove();
+    aiAppend('err','Tilkoblingsfeil – er server.py kjørende? ('+e.message+')');
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='Send';}
+  }
+}
+
+/* ============================================================
    ONLINE / OFFLINE
    ============================================================ */
 function updNet(){
@@ -2030,7 +2222,9 @@ window.addEventListener('offline',updNet);
    ============================================================ */
 loadState();loadSet();renderTrip();renderBooks();
 (function(){const k=localStorage.getItem('gmkey');if(k){const el=gi('igm');if(el)el.value=k;loadPlacesApi(k);}})();
+(function(){const k=localStorage.getItem('anthrKey');if(k){_aiKey=k;const el=gi('iant');if(el)el.value=k;setAiKey(k);}})();
 updNet();
+aiInit();
 </script>
 </body>
 </html>
