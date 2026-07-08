@@ -1097,8 +1097,8 @@ ${dieselHtml}
   </div>
 </td>
 <td><input type="date" value="${l.dato}" data-field="dato" onchange="fld(${l.id},'dato',this.value)"></td>
-<td><input type="text" value="${esc(l.fra)}" placeholder="Fra…" data-field="fra" onchange="fld(${l.id},'fra',this.value)" oninput="lMap(${l.id},this,'fra')"></td>
-<td><input type="text" value="${esc(l.til)}" placeholder="Til…" data-field="til" onchange="fld(${l.id},'til',this.value)" oninput="lMap(${l.id},this,'til')"></td>
+<td><input type="text" value="${esc(l.fra)}" placeholder="Fra…" data-field="fra" onfocus="this.dataset.orig=this.value" onchange="fld(${l.id},'fra',this.value,this.dataset.orig)" oninput="lMap(${l.id},this,'fra')"></td>
+<td><input type="text" value="${esc(l.til)}" placeholder="Til…" data-field="til" onfocus="this.dataset.orig=this.value" onchange="fld(${l.id},'til',this.value,this.dataset.orig)" oninput="lMap(${l.id},this,'til')"></td>
 <td><input type="text" value="${esc(l.overnatting)}" placeholder="Overnatting…" data-field="overnatting" onchange="fld(${l.id},'overnatting',this.value)"></td>
 <td><select data-val="${l.type}" onchange="this.dataset.val=this.value;fld(${l.id},'type',this.value);trc(${l.id},this.value)">${typeOpts(l.type)}</select></td>
 ${!isCostLeg?`<td><input type="number" value="${l.km||""}" placeholder="0" style="width:54px" data-field="km" oninput="kmI(${l.id},+this.value)" onchange="sv()"></td>`:`<td style="text-align:center;color:var(--muted)">–</td>`}
@@ -1129,18 +1129,31 @@ ${kostCell}
 /* ============================================================
    LEG OPERATIONS
    ============================================================ */
-function fld(id,field,val){
+function fld(id,field,val,origVal){
   const l=legs.find(x=>x.id===id); if(!l) return;
-  const oldVal=l[field];
+  // origVal = value before user started typing (passed via onfocus dataset.orig)
+  // l[field] may already be updated by lMap (oninput), so don't use it as oldVal
+  const oldVal=origVal!==undefined?origVal:l[field];
   l[field]=field==="km"?(parseFloat(val)||0):val;
   sv();
   if(field==="avg"||field==="km") setAnk(id);
-  // Marker km som utdatert når Fra/Til endres – brukeren må sjekke kart og oppdatere
+
+  // Dato: re-sort legs chronologically and re-render
+  if(field==="dato"){
+    legs.sort((a,b)=>{
+      if(!a.dato&&!b.dato)return 0;
+      if(!a.dato)return 1; if(!b.dato)return -1;
+      return a.dato<b.dato?-1:a.dato>b.dato?1:0;
+    });
+    renderTrip(); return;
+  }
+
+  // Fra/Til: update map link, fetch km
   if(field==="fra"||field==="til"){
     const tr2=document.querySelector(`tr[data-id="${id}"]`);
     if(tr2){
       const ki=tr2.querySelector('[data-field="km"]');
-      if(ki){ki.classList.add('km-stale');ki.title='Oppdater km fra kartet ↗';}
+      if(ki){ki.classList.add('km-stale');ki.title='Henter km…';}
       const url=effMap(l);
       const ma=document.getElementById("ml"+id);
       if(ma){
@@ -1149,7 +1162,6 @@ function fld(id,field,val){
         if(url){ma.classList.add('stale');ma.title='← Klikk, se km i Maps, skriv tilbake';}
       }
     }
-    // Tøm alltid sights/tips ved destinasjonsendring (ny eller tom)
     if(field==="til"){
       l.sights=[];l.tips=[];sv();
       const stRow=document.getElementById('st'+id);
@@ -1165,7 +1177,8 @@ function fld(id,field,val){
       fetchKm(id);
     }
   }
-  // Kjedekjøring: endre Til → oppdater neste etappes Fra (ikke for avstikker)
+
+  // Kjedekjøring: endre Til → oppdater neste etappes Fra + re-hent km for neste
   if(field==="til"&&l.type!=="avstikker"){
     const idx=legs.findIndex(x=>x.id===id);
     if(idx>=0&&idx<legs.length-1){
@@ -1175,8 +1188,9 @@ function fld(id,field,val){
         const nTr=document.querySelector(`tr[data-id="${next.id}"]`);
         if(nTr){
           const fraInp=nTr.querySelector('[data-field="fra"]');
-          if(fraInp){fraInp.value=val;lMap(next.id,fraInp,'fra');}
+          if(fraInp){fraInp.value=val;fraInp.dataset.orig=val;lMap(next.id,fraInp,'fra');}
         }
+        if(val) fetchKm(next.id);
       }
     }
   }
