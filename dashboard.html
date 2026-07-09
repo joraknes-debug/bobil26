@@ -283,9 +283,11 @@ tr.dsum>td{background:rgba(34,193,164,.07);border-top:2px solid rgba(34,193,164,
     <div class="field" style="margin-top:12px">
       <label>Anthropic API-nøkkel <span style="color:var(--muted);font-weight:400;text-transform:none">– for AI-planleggingsassistent i Turforskeren</span></label>
       <div style="display:flex;gap:8px;align-items:center;margin-top:2px">
-        <input id="iant" type="password" placeholder="sk-ant-… (for AI-chat)" style="flex:1;font-family:monospace;font-size:.8rem;background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:5px;padding:5px 7px" onchange="setAiKey(this.value)" autocomplete="off">
+        <input id="iant" type="password" placeholder="sk-ant-… (for AI-chat)" style="flex:1;font-family:monospace;font-size:.8rem;background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:5px;padding:5px 7px" oninput="setAiKey(this.value)" onchange="setAiKey(this.value)" autocomplete="off">
+        <button type="button" class="bo" style="font-size:.75rem;padding:4px 8px" title="Vis/skjul nøkkel" onclick="const f=gi('iant');f.type=f.type==='password'?'text':'password';this.textContent=f.type==='password'?'👁 Vis':'🙈 Skjul'">👁 Vis</button>
         <span id="ai-key-st" style="font-size:.73rem;color:var(--muted);white-space:nowrap">Ikke satt</span>
       </div>
+      <div id="ai-key-len" style="font-size:.66rem;color:var(--muted);margin-top:3px"></div>
       <div style="font-size:.67rem;color:var(--muted);margin-top:5px;line-height:1.8;background:var(--card2);border:1px solid var(--line);border-radius:6px;padding:8px 11px">
         <b style="color:var(--text)">Slik får du nøkkelen:</b><br>
         1. Gå til <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com/settings/keys</a><br>
@@ -2259,6 +2261,20 @@ function setAiKey(val){
   localStorage.setItem('anthrKey',_aiKey);
   const st=gi('ai-key-st');
   if(st) st.textContent=_aiKey?'Nøkkel satt ✓':'Ikke satt';
+  const len=gi('ai-key-len');
+  if(len){
+    if(!_aiKey){len.textContent='';}
+    else{
+      const okStart=_aiKey.startsWith('sk-ant-');
+      const okLen=_aiKey.length>=90;
+      const warns=[];
+      if(!okStart)warns.push('starter IKKE med «sk-ant-»');
+      if(!okLen)warns.push('ser for kort ut (mangler tegn?)');
+      len.innerHTML=`Lengde: ${_aiKey.length} tegn · `+
+        (warns.length?`<span style="color:var(--bad)">⚠ ${warns.join(', ')}</span>`
+                     :`<span style="color:var(--good)">✓ format ser riktig ut</span>`);
+    }
+  }
   const warn=gi('ai-nokey-warn');
   const box=gi('ai-box');
   if(warn&&box&&box.style.display!=='none')
