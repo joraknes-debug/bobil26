@@ -77,6 +77,7 @@ input.km-stale{border-color:var(--warn)!important;background:rgba(240,163,94,.1)
 @keyframes blink-warn{0%,100%{opacity:1}50%{opacity:.4}}
 input.km-stale{animation:blink-warn 1.2s ease-in-out 2}
 input.km-estimated{color:var(--muted)!important;font-style:italic;border-style:dashed!important}
+.wbadge{line-height:1.2;min-height:14px;font-size:.66rem;color:var(--muted);margin-top:1px;overflow:hidden;white-space:nowrap}
 tr.acr td{background:rgba(54,201,122,.06);border-top:1px dashed rgba(54,201,122,.28);padding:5px 10px;font-size:.76rem}
 tr.acr .acr-inner{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 tr.acr .acr-lbl{color:var(--good);font-weight:700;white-space:nowrap}
@@ -927,6 +928,17 @@ function setAnk(id){
   l.ank=na;
   const tr=document.querySelector(`tr[data-id="${id}"]`);
   if(tr){const a=tr.querySelector('[data-field="ank"]');if(a)a.value=na;}
+  // Kjed til neste etappe: sett avg = ank hvis neste etappe mangler avgangstid
+  const idx=legs.findIndex(x=>x.id===id);
+  if(idx>=0&&idx<legs.length-1){
+    const nxt=legs[idx+1];
+    if(!nxt.avg){
+      nxt.avg=na;sv();
+      const nTr=document.querySelector(`tr[data-id="${nxt.id}"]`);
+      if(nTr){const ai=nTr.querySelector('[data-field="avg"]');if(ai)ai.value=na;}
+      setAnk(nxt.id); // kjedeberegn videre
+    }
+  }
 }
 function saveSights(id,field,val){
   const l=legs.find(x=>x.id===id);if(!l)return;
@@ -1149,16 +1161,20 @@ ${dieselHtml}
 </td>
 <td><input type="date" value="${l.dato}" data-field="dato" onchange="fld(${l.id},'dato',this.value)"></td>
 <td><input type="text" value="${esc(l.fra)}" placeholder="Fra…" data-field="fra" onfocus="this.dataset.orig=this.value" onchange="fld(${l.id},'fra',this.value,this.dataset.orig)" oninput="lMap(${l.id},this,'fra')"></td>
-<td><input type="text" value="${esc(l.til)}" placeholder="Til…" data-field="til" onfocus="this.dataset.orig=this.value" onchange="fld(${l.id},'til',this.value,this.dataset.orig)" oninput="lMap(${l.id},this,'til')"></td>
+<td><input type="text" value="${esc(l.til)}" placeholder="Til…" data-field="til" onfocus="this.dataset.orig=this.value" onchange="fld(${l.id},'til',this.value,this.dataset.orig)" oninput="lMap(${l.id},this,'til')"><div class="wbadge" id="wb${l.id}">${legWBadge(l)}</div></td>
 <td><select data-val="${l.type}" onchange="this.dataset.val=this.value;fld(${l.id},'type',this.value);trc(${l.id},this.value)">${typeOpts(l.type)}</select></td>
 ${!isCostLeg?`<td><input type="number" value="${l.km||""}" placeholder="0" class="${l._estimated?'km-estimated':''}" title="${l._estimated?'Estimert strekning (tomt Fra/Til)':''}" style="width:54px" data-field="km" oninput="kmI(${l.id},+this.value)" onchange="sv()"></td>`:`<td style="text-align:center;color:var(--muted)">–</td>`}
-<td><input type="text" value="${esc(l.avg)}" placeholder="09:00" style="width:48px" onchange="fld(${l.id},'avg',this.value)"></td>
+<td><input type="text" value="${esc(l.avg)}" placeholder="09:00" style="width:48px" data-field="avg" onchange="fld(${l.id},'avg',this.value)"></td>
 <td><input type="text" value="${esc(l.ank)}" placeholder="12:00" style="width:48px" data-field="ank" onchange="fld(${l.id},'ank',this.value)"></td>
 <td class="cc fc">${!isCostLeg&&l.km>0?fL(fl):"–"}</td>
 ${kostCell}
 ${l.type==='avstikker'?`<td><select data-val="${l.status}" onchange="this.dataset.val=this.value;fld(${l.id},'status',this.value)">${statOpts(l.status)}</select></td>`:`<td></td>`}
 <td style="text-align:center"><a class="mab${mu?"":" off"}" id="ml${l.id}" href="${mu||"#"}" target="_blank" title="Åpne i Google Maps">🗺</a></td>
-<td><input type="text" value="${esc(l.note)}" placeholder="Notat…" class="${nCls}" style="font-size:.72rem${nCls?";color:var(--warn)":""}" onchange="fld(${l.id},'note',this.value)"></td>
+${(()=>{const um=l.note?l.note.match(/https?:\/\/[^\s]+/):null;
+return`<td><div style="display:flex;align-items:center;gap:2px">
+  <input type="text" value="${esc(l.note)}" placeholder="${l.type==='avstikker'?'Notat / lenke…':'Notat…'}" class="${nCls}" style="font-size:.72rem${nCls?';color:var(--warn)':''}" onchange="noteChg(${l.id},this.value)">
+  <a id="nl${l.id}" href="${um?um[0]:'#'}" target="_blank" class="mab" title="${um?um[0]:''}" style="flex-shrink:0;width:20px;height:20px;font-size:.72rem;${um?'':'opacity:0;pointer-events:none'}">🔗</a>
+</div></td>`;})()}
 <td style="text-align:center;white-space:nowrap">
   <button class="ib" onclick="moveLeg(${l.id},-1)" title="Flytt opp">↑</button>
   <button class="ib" onclick="moveLeg(${l.id},1)" title="Flytt ned">↓</button>
@@ -1201,7 +1217,11 @@ function fld(id,field,val,origVal){
       if(!a.dato)return 1; if(!b.dato)return -1;
       return a.dato<b.dato?-1:a.dato>b.dato?1:0;
     });
-    renderTrip(); return;
+    renderTrip();
+    // Scroll tilbake til raden og refokuser dato-input (forhindrer hopp til toppen)
+    const nr=document.querySelector(`tr[data-id="${id}"]`);
+    if(nr){nr.scrollIntoView({block:'nearest'});const di=nr.querySelector('[data-field="dato"]');if(di)di.focus();}
+    return;
   }
 
   // Fra/Til: update map link, fetch km
@@ -1228,7 +1248,7 @@ function fld(id,field,val,origVal){
       }
       const ibBtn=document.getElementById('ib'+id);
       if(ibBtn)ibBtn.classList.remove('on');
-      if(val){fetchKm(id);fetchSights(id);}
+      if(val){fetchKm(id);fetchSights(id);fetchLegWeather(id);}
     } else if(field==="fra"){
       fetchKm(id);
     }
@@ -1250,6 +1270,12 @@ function fld(id,field,val,origVal){
       }
     }
   }
+}
+function noteChg(id,val){
+  fld(id,'note',val);
+  const um=val?val.match(/https?:\/\/[^\s]+/):null;
+  const a=document.getElementById('nl'+id);
+  if(a){a.href=um?um[0]:'#';a.title=um?um[0]:'';a.style.opacity=um?'1':'0';a.style.pointerEvents=um?'auto':'none';}
 }
 function kmI(id,val){
   const l=legs.find(x=>x.id===id); if(!l) return;
@@ -1916,6 +1942,55 @@ const WMO = {
 };
 
 function wmoIcon(c){return WMO[c]||'🌡️';}
+const WMO_DESC={0:'Klarvær',1:'Mest klart',2:'Delvis skyet',3:'Overskyet',45:'Tåke',48:'Rimtåke',
+  51:'Yr',53:'Yr',55:'Yr',61:'Regn',63:'Regn',65:'Kraftig regn',
+  71:'Snø',73:'Snø',75:'Kraftig snø',80:'Regnbyger',81:'Regnbyger',82:'Kraftige byger',
+  95:'Tordenvær',96:'Tordenvær',99:'Tordenvær'};
+
+const _lwCache={};
+
+function legWBadge(l){
+  if(!l._weather)return'';
+  const w=l._weather;
+  return`<span title="${w.desc} · Maks ${w.maxT}° / Min ${w.minT}° · Nedbør ${w.precip}mm · ${w.src}" style="cursor:help">${w.icon} ${w.maxT}°C</span>`;
+}
+
+function updWBadge(legId){
+  const l=legs.find(x=>x.id===legId);if(!l)return;
+  const div=document.getElementById('wb'+legId);
+  if(div) div.innerHTML=legWBadge(l);
+}
+
+async function fetchLegWeather(legId){
+  const l=legs.find(x=>x.id===legId);
+  if(!l||!l.til||!l.dato)return;
+  const ck=l.til+'|'+l.dato;
+  if(_lwCache[ck]){l._weather=_lwCache[ck];updWBadge(legId);return;}
+  const geo=await geocodePlace(l.til);if(!geo)return;
+  const todayStr=new Date().toISOString().slice(0,10);
+  const tripDate=l.dato;
+  const diff=Math.floor((new Date(tripDate)-new Date(todayStr))/86400000);
+  let url,src;
+  if(diff>=-7&&diff<=14){
+    url=`https://api.open-meteo.com/v1/forecast?latitude=${geo.lat}&longitude=${geo.lon}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum&start_date=${tripDate}&end_date=${tripDate}&timezone=auto`;
+    src=diff<0?'faktisk vær':diff===0?'i dag':'prognose';
+  }else{
+    const pd=new Date(tripDate+'T12:00:00');pd.setFullYear(pd.getFullYear()-1);
+    const pds=pd.toISOString().slice(0,10);
+    url=`https://archive-api.open-meteo.com/v1/archive?latitude=${geo.lat}&longitude=${geo.lon}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum&start_date=${pds}&end_date=${pds}&timezone=auto`;
+    src='klimasnitt '+pd.getFullYear();
+  }
+  try{
+    const r=await fetch(url);const d=await r.json();
+    const dd=d.daily;if(!dd?.temperature_2m_max?.[0]&&dd?.temperature_2m_max?.[0]!==0)return;
+    const w={icon:WMO[dd.weathercode?.[0]]||'🌡️',maxT:Math.round(dd.temperature_2m_max[0]),
+      minT:Math.round(dd.temperature_2m_min[0]),
+      precip:Math.round((dd.precipitation_sum?.[0]||0)*10)/10,
+      desc:WMO_DESC[dd.weathercode?.[0]]||'Ukjent',src};
+    l._weather=w;_lwCache[ck]=w;updWBadge(legId);
+  }catch(e){console.warn('Leg weather:',e);}
+}
+
 function dist2str(m){return m<1000?Math.round(m)+' m':(m/1000).toFixed(1)+' km';}
 
 async function resSearch(){
@@ -2318,6 +2393,9 @@ function buildTripCtx(){
     ctx+=`Planlagte etapper:\n${sample}\n`;
     if(legs.length>20) ctx+=`...og ${legs.length-20} til.\n`;
   }
+  ctx+='Foretrekk ACSI-godkjente campingplasser (www.campingcard.com / eurocampings.eu). ';
+  ctx+='Angi kun campingplasser som sannsynligvis har ledig kapasitet på de aktuelle datoene. ';
+  ctx+='Inkluder campingens nettside eller ACSI-søkelenke der det er mulig. ';
   ctx+='Svar på norsk. Vær konkret og kortfattet.';
   return ctx;
 }
@@ -2398,11 +2476,12 @@ function autoSync(){
   if(!navigator.onLine)return;
   legs.forEach((l,i)=>{
     if(l.type==='ferge'||l.km)return;
-    // Hent km når vi har (eller kan utlede) både start og mål – inkl. estimert strekning
     const hasFra=l.fra||findEffectiveFra(i);
     const hasTil=l.til||findEffectiveTil(i);
     if(hasFra&&hasTil) fetchKm(l.id);
   });
+  // Hent værmeldinger for alle etapper med mål og dato
+  legs.forEach(l=>{if(l.til&&l.dato)fetchLegWeather(l.id);});
 }
 window.addEventListener('online',updNet);
 window.addEventListener('offline',updNet);
