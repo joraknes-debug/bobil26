@@ -1,4 +1,4 @@
-const CACHE = 'bobiltur-v1';
+const CACHE = 'bobiltur-v2';
 const ASSETS = ['./dashboard.html', './manifest.json', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', e => {
