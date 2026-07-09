@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bobiltur Europa 2026 – Molde → Pula → Oslo</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#36c97a">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <style>
 :root{
   --bg:#0f1720;--card:#172230;--card2:#1d2c3d;--line:#2a3a4d;
@@ -295,8 +298,19 @@ tr.dsum>td{background:rgba(34,193,164,.07);border-top:2px solid rgba(34,193,164,
         2. Klikk <b style="color:var(--text)">Create Key</b> og gi den et navn<br>
         3. Kopier nøkkelen (starter med <span style="font-family:monospace;color:var(--accent2)">sk-ant-…</span>)<br>
         4. Lim den inn her — lagres kun lokalt i din nettleser<br>
-        <span style="color:var(--warn)">⚙ Krever</span> at du kjører <span style="font-family:monospace;color:var(--accent2)">python3 server.py</span> i bobil26-mappen.
+        <span style="color:var(--warn)">⚙ Lokalt:</span> kjør <span style="font-family:monospace;color:var(--accent2)">python3 server.py</span> i bobil26-mappen.<br>
+        <span style="color:var(--good)">⚙ GitHub Pages / online:</span> legg inn Cloudflare Worker-URL under.
         Koster ca. $0.001–0.003 per samtale.
+      </div>
+      <div style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <label style="font-size:.73rem;color:var(--muted);white-space:nowrap">AI-proxy URL</label>
+        <input id="iproxy" type="text" placeholder="/api/chat eller https://…workers.dev/api/chat"
+          style="flex:1;font-family:monospace;font-size:.78rem;background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:5px;padding:4px 7px;min-width:200px"
+          onchange="setProxy(this.value)" value="/api/chat">
+        <span style="font-size:.68rem;color:var(--muted)">La stå tom for lokal server</span>
+      </div>
+      <div style="margin-top:10px">
+        <button id="pwa-install" class="bo" style="display:none;font-size:.75rem" onclick="pwaInstall()">📲 Installer app på denne enheten</button>
       </div>
     </div>
   </div>
@@ -2369,6 +2383,8 @@ function resConfirmAdd(){
    ============================================================ */
 let _aiKey='';
 let _aiHistory=[];
+// Proxy-URL: /api/chat lokalt, Cloudflare Worker URL når appen kjøres fra GitHub Pages e.l.
+let _aiProxy=localStorage.getItem('aiProxy')||'/api/chat';
 
 function setAiKey(val){
   _aiKey=(val||'').trim();
@@ -2397,7 +2413,7 @@ function setAiKey(val){
 
 async function aiProbe(){
   try{
-    await fetch('/api/chat',{method:'OPTIONS',signal:AbortSignal.timeout(2500)});
+    await fetch(_aiProxy,{method:'OPTIONS',signal:AbortSignal.timeout(2500)});
     return true;
   }catch(_){return false;}
 }
@@ -2479,7 +2495,7 @@ async function aiSend(){
       system:buildTripCtx(),
       messages:_aiHistory.slice(-12)
     };
-    const r=await fetch('/api/chat',{
+    const r=await fetch(_aiProxy,{
       method:'POST',
       headers:{'Content-Type':'application/json','X-Ant-Key':_aiKey},
       body:JSON.stringify(body)
@@ -2531,8 +2547,24 @@ window.addEventListener('offline',updNet);
 loadState();loadSet();renderTrip();renderBooks();
 (function(){const k=localStorage.getItem('gmkey');if(k){const el=gi('igm');if(el)el.value=k;loadPlacesApi(k);}})();
 (function(){const k=localStorage.getItem('anthrKey');if(k){_aiKey=k;const el=gi('iant');if(el)el.value=k;setAiKey(k);}})();
+(function(){const p=localStorage.getItem('aiProxy');if(p){_aiProxy=p;const el=gi('iproxy');if(el)el.value=p;}})();
 updNet();
 aiInit();
+// Service Worker for offline-støtte og PWA-installasjon
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').then(r=>{
+    r.onupdatefound=()=>{const w=r.installing;w.onstatechange=()=>{
+      if(w.state==='installed'&&navigator.serviceWorker.controller)
+        console.log('Bobiltur: ny versjon klar – last siden på nytt');
+    };};
+  }).catch(e=>console.warn('SW feil:',e));
+}
+// PWA install-knapp
+let _deferredInstall=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();_deferredInstall=e;const b=gi('pwa-install');if(b)b.style.display='';});
+window.addEventListener('appinstalled',()=>{_deferredInstall=null;const b=gi('pwa-install');if(b)b.style.display='none';});
+function pwaInstall(){if(_deferredInstall){_deferredInstall.prompt();_deferredInstall.userChoice.then(()=>{_deferredInstall=null;});}}
+function setProxy(v){_aiProxy=(v||'').trim()||'/api/chat';localStorage.setItem('aiProxy',_aiProxy);}
 </script>
 </body>
 </html>

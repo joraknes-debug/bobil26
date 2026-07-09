@@ -1,0 +1,14 @@
+{
+  "name": "Bobiltur Europa 2026",
+  "short_name": "Bobiltur",
+  "description": "Bobiltur-planlegger med rute, kostnader og AI-assistent",
+  "start_url": "./dashboard.html",
+  "display": "standalone",
+  "background_color": "#1a1c1e",
+  "theme_color": "#36c97a",
+  "lang": "no",
+  "icons": [
+    {"src":"icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
+    {"src":"icons/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+  ]
+}
