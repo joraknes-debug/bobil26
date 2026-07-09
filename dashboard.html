@@ -874,6 +874,16 @@ function loadState(){
     localStorage.setItem("bv4",JSON.stringify({legs,books,vignettes}));
     localStorage.setItem("bv4a",JSON.stringify(accomm));
   }
+  // Engangs-rydding: fjern uredigerte manuelle camping-oppføringer som accomm allerede dekker
+  books=books.filter(b=>{
+    if(b._accomm||b.type!=='camping')return true;
+    if(b.status!=='ikke-bestilt'||b.ref||b.ok)return true; // beholdt hvis redigert
+    if(b.dato&&accomm[b.dato]&&accomm[b.dato].sted)return false; // erstattes av auto
+    return true;
+  });
+  nB=Math.max(0,...books.map(b=>b.id))+1;
+  // Synkroniser accomm → bookingsjekkliste
+  syncAccommBooks();
 }
 function sv(){
   localStorage.setItem("bv4",JSON.stringify({legs,books,vignettes}));
@@ -1622,7 +1632,7 @@ function renderBooks(){
 <td><select data-val="${b.status}" onchange="this.dataset.val=this.value;bfld(${b.id},'status',this.value)">${so(b.status)}</select></td>
 <td><input type="text" value="${esc(b.ref)}" placeholder="Ref.nr…" style="width:84px" onchange="bfld(${b.id},'ref',this.value)"></td>
 <td style="text-align:center"><input type="checkbox"${b.ok?" checked":""} onchange="bfld(${b.id},'ok',this.checked)"></td>
-<td><button class="del" onclick="delBook(${b.id})">✕</button></td>
+${b._accomm?`<td style="text-align:center;color:var(--muted);font-size:.72rem" title="Hentes automatisk fra reiseruten – endre sted i overnattingsraden">🔄</td>`:`<td><button class="del" onclick="delBook(${b.id})">✕</button></td>`}
 </tr>`).join("");
   const ok=books.filter(b=>b.ok).length;
   const be=books.filter(b=>b.status==="bestilt"||b.status==="bekreftet").length;
@@ -1640,6 +1650,34 @@ function bfld(id,field,val){
 }
 function addBook(){books.push({id:nB++,type:"camping",item:"",dato:"",status:"ikke-bestilt",ref:"",ok:false});sv();renderBooks();}
 function delBook(id){books=books.filter(b=>b.id!==id);sv();renderBooks();}
+
+// Synkroniser overnatting-rader → Bookingsjekkliste automatisk
+function syncAccommBooks(){
+  const {sortedDates,map}=resolveStays();
+  const desired=[];
+  sortedDates.forEach(dato=>{
+    const st=map[dato];
+    if(!st||!st.sted||st.cont)return;
+    const sted=st.sted.trim();
+    if(!sted||/hjemme/i.test(sted)||/om bord/i.test(sted))return;
+    // Tell netter i strekk
+    let nights=0,d=new Date(dato+'T12:00:00');
+    while(true){const ds=d.toISOString().slice(0,10);const s=map[ds];if(!s||s.sted!==st.sted)break;nights++;d.setDate(d.getDate()+1);}
+    const ns=nights>1?` (${nights} netter)`:nights===1?' (1 natt)':'';
+    desired.push({dato,sted,item:sted+ns});
+  });
+  const dDatos=new Set(desired.map(d=>d.dato));
+  // Fjern utdaterte auto-oppføringer
+  books=books.filter(b=>!b._accomm||dDatos.has(b._accomm));
+  // Oppdater eller legg til
+  desired.forEach(({dato,sted,item})=>{
+    const ex=books.find(b=>b._accomm===dato);
+    if(ex){ex.item=item;}
+    else{books.push({id:nB++,type:'camping',item,dato,status:'ikke-bestilt',ref:'',ok:false,_accomm:dato});}
+  });
+  // Sorter på dato
+  books.sort((a,b)=>{if(!a.dato&&!b.dato)return 0;if(!a.dato)return 1;if(!b.dato)return -1;return a.dato<b.dato?-1:a.dato>b.dato?1:0;});
+}
 
 /* ============================================================
    FAKTISK KOST PER ETAPPE
@@ -1754,7 +1792,8 @@ function setAccomm(dato,field,val){
   if(field==='sted'){
     const sp=document.getElementById('acrmap-'+dato);
     if(sp)sp.innerHTML=ovMapLink(val);
-    renderTrip();return; // oppdater «fortsetter»-deteksjon for påfølgende dager
+    syncAccommBooks();sv();renderBooks();
+    renderTrip();return;
   }
   if(field==='betalingType'){renderTrip();return;} // vis/skjul depositum-felt
   upMet();
