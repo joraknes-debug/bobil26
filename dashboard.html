@@ -76,6 +76,14 @@ td select{cursor:pointer}
 input.km-stale{border-color:var(--warn)!important;background:rgba(240,163,94,.1)!important;color:var(--warn)!important}
 @keyframes blink-warn{0%,100%{opacity:1}50%{opacity:.4}}
 input.km-stale{animation:blink-warn 1.2s ease-in-out 2}
+input.km-estimated{color:var(--muted)!important;font-style:italic;border-style:dashed!important}
+tr.acr td{background:rgba(54,201,122,.06);border-top:1px dashed rgba(54,201,122,.28);padding:5px 10px;font-size:.76rem}
+tr.acr .acr-inner{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+tr.acr .acr-lbl{color:var(--good);font-weight:700;white-space:nowrap}
+tr.acr input,tr.acr select{font-size:.74rem;width:auto;min-width:0}
+tr.acr .acr-sted{width:220px;border:1px solid var(--line)!important;background:var(--bg)!important}
+tr.acr.acr-cont td{background:rgba(54,201,122,.025);color:var(--muted);font-style:italic}
+tr.acr a.mab{width:20px;height:20px;font-size:.72rem}
 .del{background:none;border:none;color:var(--line);font-size:.82rem;padding:2px 4px;cursor:pointer;border-radius:3px;width:auto}
 .del:hover{color:var(--bad);background:rgba(239,107,107,.1)}
 .ib{background:none;border:none;padding:2px 3px;cursor:pointer;font-size:.78rem;color:var(--muted);border-radius:3px;width:auto;line-height:1}
@@ -337,7 +345,6 @@ tr.dsum>td{background:rgba(34,193,164,.07);border-top:2px solid rgba(34,193,164,
           <th style="width:100px">Dato</th>
           <th style="min-width:140px">Fra</th>
           <th style="min-width:140px">Til</th>
-          <th style="min-width:145px">Overnatting</th>
           <th style="width:80px">Type</th>
           <th style="width:60px">Km</th>
           <th style="width:52px">Avg.</th>
@@ -353,7 +360,7 @@ tr.dsum>td{background:rgba(34,193,164,.07);border-top:2px solid rgba(34,193,164,
       <tbody id="tb"></tbody>
       <tfoot>
         <tr class="ftr">
-          <td colspan="7" style="color:var(--muted);font-weight:400;font-size:.7rem">Totalt</td>
+          <td colspan="6" style="color:var(--muted);font-weight:400;font-size:.7rem">Totalt</td>
           <td class="cc" id="fkm" style="color:var(--accent)"></td>
           <td colspan="2"></td>
           <td class="cc" id="ffl" style="color:var(--accent)"></td>
@@ -464,8 +471,7 @@ tr.dsum>td{background:rgba(34,193,164,.07);border-top:2px solid rgba(34,193,164,
     <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
       <input type="date" id="res-add-date" class="si" style="width:130px" title="Dato for etappen">
       <select id="res-add-type" class="si" style="width:124px;cursor:pointer">
-        <option value="kjøre">🚐 Kjøredag</option>
-        <option value="opphold" selected>🏕 Overnatting</option>
+        <option value="kjøre" selected>🚐 Kjøredag</option>
         <option value="avstikker">🚶 Dagstur</option>
       </select>
       <input type="text" id="res-add-note" placeholder="Notat…" class="si" style="min-width:120px;flex:1">
@@ -812,7 +818,7 @@ function getCI(code){
 /* ============================================================
    STATE
    ============================================================ */
-let legs, books, vignettes, nL, nB;
+let legs, books, vignettes, accomm, nL, nB;
 
 function loadState(){
   // Migrer fra gammel nøkkel bv3 dersom bv4 ikke finnes
@@ -835,11 +841,40 @@ function loadState(){
     if(!l.betalingType)l.betalingType=l.type==='ferge'?'betalt':'ved-ankomst';
     if(l.depositumBetalt===undefined)l.depositumBetalt=0;
   });
+  // Overnatting: egen struktur per dato (bv4a). Migrer opphold-etapper + per-etappe overnatting.
+  const rawA=localStorage.getItem("bv4a");
+  accomm=JSON.parse(rawA||"{}");
+  if(rawA===null){
+    legs.forEach(l=>{
+      if(!l.dato)return;
+      if(l.type==='opphold'){
+        const ex=accomm[l.dato]||{};
+        accomm[l.dato]={
+          sted:l.overnatting||ex.sted||'',
+          status:l.status||ex.status||'ikke-bestilt',
+          kostnad:l.kostnad||ex.kostnad||0,
+          kostnadCurr:l.kostnadCurr||ex.kostnadCurr||'EUR',
+          betalingType:l.betalingType||ex.betalingType||'ved-ankomst',
+          depositum:ex.depositum||0,
+          depositumBetalt:l.depositumBetalt||ex.depositumBetalt||0
+        };
+      } else if(l.overnatting&&!accomm[l.dato]){
+        accomm[l.dato]={sted:l.overnatting,status:'ikke-bestilt',kostnad:0,kostnadCurr:'EUR',betalingType:'ved-ankomst',depositum:0,depositumBetalt:0};
+      }
+    });
+  }
+  // Opphold er ikke lenger en egen etappetype – fjernes fra listen
+  legs=legs.filter(l=>l.type!=='opphold');
   nL=Math.max(0,...legs.map(l=>l.id))+1;
   nB=Math.max(0,...books.map(b=>b.id))+1;
+  if(rawA===null){
+    localStorage.setItem("bv4",JSON.stringify({legs,books,vignettes}));
+    localStorage.setItem("bv4a",JSON.stringify(accomm));
+  }
 }
 function sv(){
   localStorage.setItem("bv4",JSON.stringify({legs,books,vignettes}));
+  localStorage.setItem("bv4a",JSON.stringify(accomm));
   localStorage.setItem("bv4s",JSON.stringify(gs()));
 }
 function loadSet(){
@@ -909,13 +944,12 @@ function lCo(l,c,p){return lFl(l,c)*p;}
    ============================================================ */
 function upMet(){
   const s=gs();
-  const dl=legs.filter(l=>l.type!=='ferge'&&l.type!=='opphold');
+  const dl=legs.filter(l=>l.type!=='ferge');
   const tkm=dl.reduce((a,l)=>a+(l.km||0),0);
   const tfl=dl.reduce((a,l)=>a+lFl(l,s.c),0);
   const fco=tfl*s.p;
-  const nights=legs.filter(l=>l.overnatting&&l.type!=="ferge"&&
-    l.overnatting!=="Hjemme – egen leilighet"&&
-    l.overnatting!=="Hjemme"&&l.overnatting!=="Om bord (ferge)").length;
+  const nights=Object.values(resolveStays().map).filter(st=>st.sted&&
+    !/hjemme/i.test(st.sted)&&!/om bord/i.test(st.sted)).length;
   const cco=nights*s.ca;
   const tot=fco+s.f+s.v+cco;
   gi("m0").innerHTML=fmt(tkm)+'<small> km</small>';
@@ -928,7 +962,7 @@ function upMet(){
   // Faktiske kostnader (per etappe + drivstoff-kvitteringer + vignetter)
   const aktDiesel=legs.reduce((a,l)=>a+(l.diesel||[]).reduce((b,d)=>b+toEUR((d.liter||0)*(d.pris||0),d.curr||'EUR',s.r),0),0);
   const aktFerge=legs.filter(l=>l.type==='ferge'&&l.faktKost>0).reduce((a,l)=>a+toEUR(l.faktKost,l.faktKostCurr,s.r),0);
-  const aktCamp=legs.filter(l=>l.type==='opphold'&&l.faktKost>0).reduce((a,l)=>a+toEUR(l.faktKost,l.faktKostCurr,s.r),0);
+  const aktCamp=Object.values(accomm).reduce((a,ac)=>a+(ac.kostnad>0?toEUR(ac.kostnad,ac.kostnadCurr||'EUR',s.r):0),0);
   const vigPaid=Object.values(vignettes||{}).reduce((a,vg)=>a+(vg.ok&&vg.pris?toEUR(vg.pris,vg.curr||'EUR',s.r):0),0);
   const hasFact=aktDiesel>0||aktFerge>0||aktCamp>0||vigPaid>0||s.ff>0||s.fca>0;
   const faktDiesel=aktDiesel>0?aktDiesel:fco;
@@ -961,7 +995,7 @@ function vigRow(code){
   const s=gs();
   const co=CURR_LABELS.map(c=>`<option${(vg.curr||'EUR')===c?' selected':''}>${c}</option>`).join('');
   return`<tr class="brow${isOk?' ok':''}" data-vigcode="${code}">
-<td colspan="16"><div class="brow-inner">
+<td colspan="15"><div class="brow-inner">
   <span style="font-size:1.2rem">${cm.flag}</span>
   <b style="color:${isOk?'var(--good)':'var(--warn)'}">${isOk?'✓ ':'🚧 '}Krysser inn i ${ci.name}</b>
   <span style="color:var(--muted);font-size:.73rem">${ci.vignett}</span>
@@ -981,8 +1015,8 @@ function vigRow(code){
 
 function renderTrip(){
   const s=gs();
-  const typeOpts=t=>["kjøre","ferge","opphold","avstikker"].map(v=>
-    `<option value="${v}"${t===v?" selected":""}>${{kjøre:"Kjøredag",ferge:"Ferge",opphold:"Opphold",avstikker:"Avstikker 🔀"}[v]}</option>`
+  const typeOpts=t=>["kjøre","ferge","avstikker"].map(v=>
+    `<option value="${v}"${t===v?" selected":""}>${{kjøre:"Kjøredag",ferge:"Ferge",avstikker:"Avstikker 🔀"}[v]}</option>`
   ).join("");
   const statOpts=sv=>["ikke-bestilt","bestilt","bekreftet"].map(v=>
     `<option value="${v}"${sv===v?" selected":""}>${{"ikke-bestilt":"Ikke bestilt","bestilt":"Bestilt","bekreftet":"Bekreftet"}[v]}</option>`
@@ -1002,20 +1036,35 @@ function renderTrip(){
   const ferdigDates=new Set(Object.entries(dateGroups)
     .filter(([d,g])=>d!=='__'&&g.done===g.total&&g.total>0).map(([d])=>d));
 
+  // Alle datoer (etapper + overnatting) sortert + opphold-oppløsning («fortsetter»)
+  const legDates=new Set(legs.filter(l=>l.dato).map(l=>l.dato));
+  const {sortedDates,map:stayMap}=resolveStays();
+  // Datoer som KUN har overnatting (ingen etappe) – f.eks. hviledager
+  const accommOnlyDates=sortedDates.filter(d=>!legDates.has(d));
+  let aoIdx=0;
+  const flushAccommOnly=before=>{
+    while(aoIdx<accommOnlyDates.length&&(before===null||accommOnlyDates[aoIdx]<before)){
+      rows.push(ovRow(accommOnlyDates[aoIdx],stayMap[accommOnlyDates[aoIdx]],statOpts,cOpts));
+      aoIdx++;
+    }
+  };
+
   let rows=[];
   let prevCo=detectCountry(legs[0]?.fra);
 
   legs.forEach((l,i)=>{
+    // Slipp inn overnatting-rader for hviledager som kommer kronologisk før denne etappen
+    if(l.dato)flushAccommOnly(l.dato);
     const destCo=detectCountry(l.til);
     if(destCo&&destCo!==prevCo){rows.push(vigRow(destCo));prevCo=destCo;}
 
     const fl=lFl(l,s.c),co=lCo(l,s.c,s.p);
     const mu=effMap(l);
-    const rc=l.type==="ferge"?" rf":l.type==="opphold"?" ro":l.type==="avstikker"?" ra":"";
+    const rc=l.type==="ferge"?" rf":l.type==="avstikker"?" ra":"";
     const nCls=l.note&&(l.note[0]==="⚠"||l.note[0]==="✈"||l.note[0]==="🎯"||l.note[0]==="🏁")?" nw":"";
 
     // Kost-celle: editerbar kostnad + betalingstype for alle etapper
-    const isCostLeg=l.type==='ferge'||l.type==='opphold';
+    const isCostLeg=l.type==='ferge';
     const hasDeposit=l.betalingType==='depositum';
     const btLabel={betalt:'💳',ved_ankomst:'🏕️',depositum:'⬡'}[l.betalingType]||'💳';
     const kostCell=isCostLeg
@@ -1099,14 +1148,13 @@ ${dieselHtml}
 <td><input type="date" value="${l.dato}" data-field="dato" onchange="fld(${l.id},'dato',this.value)"></td>
 <td><input type="text" value="${esc(l.fra)}" placeholder="Fra…" data-field="fra" onfocus="this.dataset.orig=this.value" onchange="fld(${l.id},'fra',this.value,this.dataset.orig)" oninput="lMap(${l.id},this,'fra')"></td>
 <td><input type="text" value="${esc(l.til)}" placeholder="Til…" data-field="til" onfocus="this.dataset.orig=this.value" onchange="fld(${l.id},'til',this.value,this.dataset.orig)" oninput="lMap(${l.id},this,'til')"></td>
-<td><input type="text" value="${esc(l.overnatting)}" placeholder="Overnatting…" data-field="overnatting" onchange="fld(${l.id},'overnatting',this.value)"></td>
 <td><select data-val="${l.type}" onchange="this.dataset.val=this.value;fld(${l.id},'type',this.value);trc(${l.id},this.value)">${typeOpts(l.type)}</select></td>
-${!isCostLeg?`<td><input type="number" value="${l.km||""}" placeholder="0" style="width:54px" data-field="km" oninput="kmI(${l.id},+this.value)" onchange="sv()"></td>`:`<td style="text-align:center;color:var(--muted)">–</td>`}
+${!isCostLeg?`<td><input type="number" value="${l.km||""}" placeholder="0" class="${l._estimated?'km-estimated':''}" title="${l._estimated?'Estimert strekning (tomt Fra/Til)':''}" style="width:54px" data-field="km" oninput="kmI(${l.id},+this.value)" onchange="sv()"></td>`:`<td style="text-align:center;color:var(--muted)">–</td>`}
 <td><input type="text" value="${esc(l.avg)}" placeholder="09:00" style="width:48px" onchange="fld(${l.id},'avg',this.value)"></td>
 <td><input type="text" value="${esc(l.ank)}" placeholder="12:00" style="width:48px" data-field="ank" onchange="fld(${l.id},'ank',this.value)"></td>
 <td class="cc fc">${!isCostLeg&&l.km>0?fL(fl):"–"}</td>
 ${kostCell}
-<td><select data-val="${l.status}" onchange="this.dataset.val=this.value;fld(${l.id},'status',this.value)">${statOpts(l.status)}</select></td>
+${l.type==='avstikker'?`<td><select data-val="${l.status}" onchange="this.dataset.val=this.value;fld(${l.id},'status',this.value)">${statOpts(l.status)}</select></td>`:`<td></td>`}
 <td style="text-align:center"><a class="mab${mu?"":" off"}" id="ml${l.id}" href="${mu||"#"}" target="_blank" title="Åpne i Google Maps">🗺</a></td>
 <td><input type="text" value="${esc(l.note)}" placeholder="Notat…" class="${nCls}" style="font-size:.72rem${nCls?";color:var(--warn)":""}" onchange="fld(${l.id},'note',this.value)"></td>
 <td style="text-align:center;white-space:nowrap">
@@ -1116,11 +1164,17 @@ ${kostCell}
 </td>
 </tr>${sRow}`);
 
+    // Overnatting-rad nederst på hver dag (etter siste etappe for datoen)
+    if(l.dato&&lastDateIdx[l.dato]===i){
+      rows.push(ovRow(l.dato,stayMap[l.dato],statOpts,cOpts));
+    }
     // Insert day-summary row once, after the last occurrence of a fully-ferdig date
     if(l.dato&&ferdigDates.has(l.dato)&&lastDateIdx[l.dato]===i){
       rows.push(daySummaryRow(l.dato,i,s));
     }
   });
+  // Resterende hviledager (overnatting etter siste etappe, f.eks. endestasjon)
+  flushAccommOnly(null);
 
   gi("tb").innerHTML=rows.join("");
   upMet();
@@ -1197,15 +1251,15 @@ function fld(id,field,val,origVal){
 }
 function kmI(id,val){
   const l=legs.find(x=>x.id===id); if(!l) return;
-  if(l.type==='ferge'||l.type==='opphold') return;
-  l.km=val||0;
+  if(l.type==='ferge') return;
+  l.km=val||0;l._estimated=false; // manuell verdi er ikke lenger estimat
   const s=gs(),fl=lFl(l,s.c),co=lCo(l,s.c,s.p);
   const tr=document.querySelector(`tr[data-id="${id}"]`);
   if(tr){
     const fc=tr.querySelector(".fc"); if(fc) fc.textContent=l.km>0?fL(fl):"–";
     const kc=tr.querySelector(".kc"); if(kc) kc.textContent=l.km>0?fE(co):"–";
     const ki=tr.querySelector('[data-field="km"]');
-    if(ki){ki.classList.remove('km-stale');ki.title="";}
+    if(ki){ki.classList.remove('km-stale','km-estimated');ki.title="";}
     const ma=document.getElementById("ml"+id);
     if(ma){ma.classList.remove('stale');ma.title="Åpne i Google Maps";}
   }
@@ -1280,12 +1334,12 @@ async function geocodePlace(query){
   _lastNomReq=Date.now();
   try{
     const res=await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`,
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&addressdetails=1`,
       {headers:{'User-Agent':'BobilturDashboard/2026'}}
     );
     const data=await res.json();
     if(data[0]){
-      const r={lat:parseFloat(data[0].lat),lon:parseFloat(data[0].lon)};
+      const r={lat:parseFloat(data[0].lat),lon:parseFloat(data[0].lon),name:data[0].display_name||query};
       geoCache[key]=r;
       return r;
     }
@@ -1317,15 +1371,29 @@ function setGmKey(key){
   else{localStorage.removeItem('gmkey');const st=gi('gm-st');if(st){st.textContent='Ikke satt – bruker OSM';st.style.color='var(--muted)';}}
 }
 
+// Se bakover i lista etter siste kjente destinasjon (Til, ev. Fra)
+function findEffectiveFra(idx){
+  for(let i=idx-1;i>=0;i--){ if(legs[i].til)return legs[i].til; if(legs[i].fra)return legs[i].fra; }
+  return null;
+}
+// Se fremover etter neste kjente startsted (Fra, ev. Til)
+function findEffectiveTil(idx){
+  for(let i=idx+1;i<legs.length;i++){ if(legs[i].fra)return legs[i].fra; if(legs[i].til)return legs[i].til; }
+  return null;
+}
 async function fetchKm(id){
   const l=legs.find(x=>x.id===id);
-  if(!l||!l.fra||!l.til)return;
-  if(l.type==='ferge'||l.type==='opphold')return;
+  if(!l||l.type==='ferge')return;
+  const idx=legs.findIndex(x=>x.id===id);
+  const effFra=l.fra||findEffectiveFra(idx);
+  const effTil=l.til||findEffectiveTil(idx);
+  if(!effFra||!effTil)return;
+  const isEstimate=!l.fra||!l.til; // minst ett felt tomt → estimert strekning
   const tr=document.querySelector(`tr[data-id="${id}"]`);
   const ki=tr?tr.querySelector('[data-field="km"]'):null;
   if(ki){ki.placeholder='…';ki.disabled=true;ki.style.opacity='.5';}
   try{
-    const [fra,til]=await Promise.all([geocodePlace(l.fra),geocodePlace(l.til)]);
+    const [fra,til]=await Promise.all([geocodePlace(effFra),geocodePlace(effTil)]);
     const ki2=document.querySelector(`tr[data-id="${id}"] [data-field="km"]`);
     if(ki2){ki2.disabled=false;ki2.placeholder='0';ki2.style.opacity='';}
     if(!fra||!til){if(ki2)ki2.classList.add('km-stale');return;}
@@ -1334,8 +1402,13 @@ async function fetchKm(id){
     const data=await res.json();
     if(data.code==='Ok'&&data.routes[0]){
       const km=Math.round(data.routes[0].distance/1000);
-      l.km=km;
-      if(ki2){ki2.value=km;ki2.classList.remove('km-stale');ki2.title='';}
+      l.km=km;l._estimated=isEstimate;
+      if(ki2){
+        ki2.value=km;ki2.classList.remove('km-stale');
+        ki2.classList.toggle('km-estimated',isEstimate);
+        ki2.title=(isEstimate?`ESTIMERT strekning: ${effFra} → ${effTil}\n`:'')
+          +`Fra: ${fra.name}\nTil: ${til.name}`;
+      }
       const ma=document.getElementById('ml'+id);
       if(ma){ma.classList.remove('stale');ma.title='Åpne i Google Maps';}
       const s=gs(),fl=lFl(l,s.c),co=lCo(l,s.c,s.p);
@@ -1587,12 +1660,84 @@ function legNOKremaining(l,s){
   return 0;
 }
 
+/* ============================================================
+   OVERNATTING (accomm) – egen rad nederst på hver dag
+   ============================================================ */
+function ovMapLink(sted){
+  return sted?`<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sted)}" target="_blank" class="mab" title="Vis i Google Maps">🗺</a>`:'';
+}
+// Løser opp overnattingssteder på tvers av dager: fyll inn stedet én gang, så
+// «fortsetter» det på påfølgende hviledager (dager uten kjøre/ferge) automatisk.
+function resolveStays(){
+  const sortedDates=[...new Set([...legs.filter(l=>l.dato).map(l=>l.dato),...Object.keys(accomm)])].filter(Boolean).sort();
+  const travelDates=new Set(legs.filter(l=>(l.type==='kjøre'||l.type==='ferge')&&(l.til||l.fra)).map(l=>l.dato));
+  const map={};let cur='';
+  sortedDates.forEach(d=>{
+    const a=accomm[d];
+    if(a&&a.sted){cur=a.sted;map[d]={sted:a.sted,cont:false};}
+    else if(cur&&!travelDates.has(d)){map[d]={sted:cur,cont:true};}
+    else {map[d]={sted:'',cont:false};if(travelDates.has(d))cur='';}
+  });
+  return {sortedDates,map};
+}
+function ovRow(dato,stay,statOpts,cOpts){
+  const a=accomm[dato]||{sted:'',status:'ikke-bestilt',kostnad:0,kostnadCurr:'EUR',betalingType:'ved-ankomst',depositum:0,depositumBetalt:0};
+  const cont=stay&&stay.cont;
+  const contSted=stay?stay.sted:'';
+  const dd=new Date(dato+'T12:00:00');
+  const dn=isNaN(dd.getTime())?dato:dd.toLocaleDateString('no-NO',{weekday:'short',day:'numeric',month:'short'});
+  if(cont){
+    return`<tr class="acr acr-cont" data-acr="${dato}"><td colspan="15">
+      <div class="acr-inner"><span class="acr-lbl">🏕 Overnatting</span>
+        <span>${dn}</span>
+        <span>→ Fortsetter: <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(contSted)}" target="_blank" style="color:var(--accent2)">${esc(contSted)}</a></span>
+        <button class="ib" title="Overstyr – legg inn eget sted denne natten" onclick="ovOverride('${dato}')">✎</button>
+      </div></td></tr>`;
+  }
+  const hasDep=a.betalingType==='depositum';
+  return`<tr class="acr" data-acr="${dato}"><td colspan="15">
+    <div class="acr-inner">
+      <span class="acr-lbl">🏕 Overnatting</span>
+      <span style="color:var(--muted)">${dn}</span>
+      <input class="acr-sted" type="text" value="${esc(a.sted)}" placeholder="Overnattingssted…" onchange="setAccomm('${dato}','sted',this.value)">
+      <span id="acrmap-${dato}">${ovMapLink(a.sted)}</span>
+      <select data-val="${a.status}" onchange="this.dataset.val=this.value;setAccomm('${dato}','status',this.value)">${statOpts(a.status)}</select>
+      <span style="display:flex;align-items:center;gap:3px">
+        <input type="number" value="${a.kostnad||''}" placeholder="Pris" class="si" style="width:70px;text-align:right" onchange="setAccomm('${dato}','kostnad',this.value)" title="Sum for hele oppholdet">
+        <select class="ss" onchange="setAccomm('${dato}','kostnadCurr',this.value)">${cOpts(a.kostnadCurr||'EUR')}</select>
+      </span>
+      <select class="ss" onchange="setAccomm('${dato}','betalingType',this.value)">
+        <option value="betalt"${a.betalingType==='betalt'?' selected':''}>💳 Forhånd</option>
+        <option value="ved-ankomst"${a.betalingType==='ved-ankomst'?' selected':''}>🏕 Ankomst</option>
+        <option value="depositum"${a.betalingType==='depositum'?' selected':''}>⬡ Depositum</option>
+      </select>
+      ${hasDep?`<span style="display:flex;align-items:center;gap:3px;color:var(--muted)">Dep:<input type="number" value="${a.depositumBetalt||''}" placeholder="0" class="si" style="width:64px;text-align:right" onchange="setAccomm('${dato}','depositumBetalt',this.value)"></span>`:''}
+    </div></td></tr>`;
+}
+function ovOverride(dato){
+  const {map}=resolveStays();
+  const sted=map[dato]?map[dato].sted:'';
+  setAccomm(dato,'sted',sted||' ');
+}
+function setAccomm(dato,field,val){
+  if(!accomm[dato])accomm[dato]={sted:'',status:'ikke-bestilt',kostnad:0,kostnadCurr:'EUR',betalingType:'ved-ankomst',depositum:0,depositumBetalt:0};
+  accomm[dato][field]=(field==='kostnad'||field==='depositum'||field==='depositumBetalt')?(parseFloat(val)||0):val;
+  sv();
+  if(field==='sted'){
+    const sp=document.getElementById('acrmap-'+dato);
+    if(sp)sp.innerHTML=ovMapLink(val);
+    renderTrip();return; // oppdater «fortsetter»-deteksjon for påfølgende dager
+  }
+  if(field==='betalingType'){renderTrip();return;} // vis/skjul depositum-felt
+  upMet();
+}
+
 function daySummaryRow(date,upToIdx,s){
   const spent=legs.reduce((a,l)=>a+legNOKspent(l,s),0);
   const remaining=legs.slice(upToIdx+1).reduce((a,l)=>a+legNOKremaining(l,s),0);
   const d=new Date(date+'T12:00:00');
   const dn=d.toLocaleDateString('no-NO',{weekday:'long',day:'numeric',month:'long'});
-  return`<tr class="dsum"><td colspan="16">
+  return`<tr class="dsum"><td colspan="15">
     <span style="color:var(--good);font-weight:700">✓ ${dn} fullført</span>
     <span style="margin:0 10px;color:var(--line)">│</span>
     Betalt totalt: <b style="color:var(--accent)">${fmt(spent)} kr</b>
@@ -2224,8 +2369,12 @@ function updNet(){
 }
 function autoSync(){
   if(!navigator.onLine)return;
-  legs.forEach(l=>{
-    if(l.fra&&l.til&&!l.km&&l.type!=='ferge'&&l.type!=='opphold') fetchKm(l.id);
+  legs.forEach((l,i)=>{
+    if(l.type==='ferge'||l.km)return;
+    // Hent km når vi har (eller kan utlede) både start og mål – inkl. estimert strekning
+    const hasFra=l.fra||findEffectiveFra(i);
+    const hasTil=l.til||findEffectiveTil(i);
+    if(hasFra&&hasTil) fetchKm(l.id);
   });
 }
 window.addEventListener('online',updNet);
