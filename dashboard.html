@@ -1840,7 +1840,7 @@ function togSec(id,toggle){
    ============================================================ */
 function exportData(){
   const a=document.createElement("a");
-  a.href="data:application/json;charset=utf-8,"+encodeURIComponent(JSON.stringify({settings:gs(),legs,books},null,2));
+  a.href="data:application/json;charset=utf-8,"+encodeURIComponent(JSON.stringify({settings:gs(),legs,books,accomm,vignettes},null,2));
   a.download="bobiltur2026.json";a.click();
 }
 function importData(){
@@ -1852,8 +1852,18 @@ function importData(){
     fr.onload=ev=>{
       try{
         const d=JSON.parse(ev.target.result);
-        if(d.legs){legs=d.legs;nL=Math.max(0,...legs.map(l=>l.id))+1;}
+        if(d.legs){legs=d.legs.filter(l=>l.type!=='opphold');nL=Math.max(0,...legs.map(l=>l.id))+1;}
         if(d.books){books=d.books;nB=Math.max(0,...books.map(b=>b.id))+1;}
+        if(d.accomm){accomm=d.accomm;}
+        else if(d.legs){ // eldre backup uten accomm – migrer opphold/overnatting
+          accomm=accomm||{};
+          d.legs.forEach(l=>{
+            if(!l.dato)return;
+            if(l.type==='opphold'){accomm[l.dato]={sted:l.overnatting||'',status:l.status||'ikke-bestilt',kostnad:l.kostnad||0,kostnadCurr:l.kostnadCurr||'EUR',betalingType:l.betalingType||'ved-ankomst',depositum:0,depositumBetalt:l.depositumBetalt||0};}
+            else if(l.overnatting&&!accomm[l.dato]){accomm[l.dato]={sted:l.overnatting,status:'ikke-bestilt',kostnad:0,kostnadCurr:'EUR',betalingType:'ved-ankomst',depositum:0,depositumBetalt:0};}
+          });
+        }
+        if(d.vignettes){vignettes=d.vignettes;}
         if(d.settings){
           const s=d.settings;
           if(s.p!==undefined)gi("ip").value=s.p;if(s.c!==undefined)gi("ic").value=s.c;
@@ -1874,8 +1884,9 @@ function importData(){
 function nyReise(){
   if(!confirm('Gjeldende tur eksporteres automatisk som JSON, deretter starter du en tom ny tur. Fortsette?'))return;
   exportData();
-  legs=cp(TEMPLATE_LEGS);
+  legs=cp(TEMPLATE_LEGS).filter(l=>l.type!=='opphold');
   books=cp(TEMPLATE_BOOKS);
+  accomm={};vignettes={};
   nL=Math.max(0,...legs.map(l=>l.id))+1;
   nB=Math.max(0,...books.map(b=>b.id))+1;
   // Nullstill faktisk-felt
